@@ -47,12 +47,13 @@
 (setq rtags-autostart-diagnostics t)
 (rtags-enable-standard-keybindings)
 
-(require 'rtags-helm)
+(require 'helm-rtags)
 (setq rtags-use-helm t)
 
 (add-hook 'c++-mode-hook 'irony-mode)
 (add-hook 'c-mode-hook 'irony-mode)
 (add-hook 'objc-mode-hook 'irony-mode)
+(add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 
 (defun my-irony-mode-hook ()
   (define-key irony-mode-map [remap completion-at-point]
