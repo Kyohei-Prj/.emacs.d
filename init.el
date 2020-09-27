@@ -11,7 +11,7 @@
  '(ein:output-area-inlined-images t)
  '(package-selected-packages
    (quote
-    (ein multi-term helm elpy yasnippet s pyvenv highlight-indentation elscreen company))))
+    (flycheck-yamllint flymake-yaml yaml-imenu yaml-mode yaml-tomato ein multi-term helm elpy yasnippet s pyvenv highlight-indentation elscreen company))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -33,6 +33,7 @@
 (windmove-default-keybindings)
 (global-set-key (kbd "C-j") 'goto-line)
 (global-set-key (kbd "C-h") 'helm-for-files)
+(set-face-attribute 'region nil :background "green")
 
 (require 'company)
 (global-company-mode)
