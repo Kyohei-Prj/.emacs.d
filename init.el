@@ -35,6 +35,10 @@
 (global-set-key (kbd "C-h") 'helm-for-files)
 (set-face-attribute 'region nil :background "green")
 
+(require 'mozc)
+(setq default-input-method "japanese-mozc")
+(setq mozc-candidate-style 'overlay)
+
 (require 'company)
 (global-company-mode)
 
