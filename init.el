@@ -58,7 +58,11 @@
                         pyvenv
                         ein
                         company-c-headers
-                        dracula-theme))
+                        dracula-theme
+			exec-path-from-shell
+			elpy
+			monokai-theme
+			yascroll))
   (package-initialize)
   (unless package-archive-contents
     (package-refresh-contents))
@@ -82,6 +86,7 @@
 (tool-bar-mode -1)
 (tooltip-mode -1)
 (menu-bar-mode -1)
+(scroll-bar-mode nil)
 (set-fringe-mode 10)
 (set-face-attribute 'default nil :height 100)
 (setq inhibit-startup-message t)
@@ -89,7 +94,7 @@
 (global-linum-mode t)
 (windmove-default-keybindings)
 (global-set-key (kbd "C-c C-j") 'goto-line)
-(load-theme 'dracula t)
+(load-theme 'monokai t)
 
 (leaf leaf
   :config
@@ -252,17 +257,42 @@
                                ("C-c d" . lsp-ui-doc-mode)))
           :hook ((lsp-mode-hook . lsp-ui-mode))))
 
-(leaf lsp-pyright
-  :doc "Python LSP client using Pyright"
-  :req "emacs-26.1" "lsp-mode-7.0" "dash-2.18.0" "ht-2.0"
-  :tag "lsp" "tools" "languages" "emacs>=26.1"
-  :url "https://github.com/emacs-lsp/lsp-pyright"
-  :added "2022-01-09"
-  :emacs>= 26.1
+;; (leaf lsp-pyright
+;;   :doc "Python LSP client using Pyright"
+;;   :req "emacs-26.1" "lsp-mode-7.0" "dash-2.18.0" "ht-2.0"
+;;   :tag "lsp" "tools" "languages" "emacs>=26.1"
+;;   :url "https://github.com/emacs-lsp/lsp-pyright"
+;;   :added "2022-01-09"
+;;   :emacs>= 26.1
+;;   :ensure t
+;;   :hook (python-mode-hook . (lambda ()
+;;                               (require 'lsp-pyright)
+;;                               (lsp-deferred))))
+
+(leaf elpy
   :ensure t
-  :hook (python-mode-hook . (lambda ()
-                              (require 'lsp-pyright)
-                              (lsp-deferred))))
+  :init
+  (elpy-enable)
+  :config
+  (remove-hook 'elpy-modules 'elpy-module-highlight-indentation) ;; インデントハイライトの無効化
+  (remove-hook 'elpy-modules 'elpy-module-flymake) ;; flymakeの無効化
+  :custom
+  (elpy-rpc-python-command . "python3") ;; https://mako-note.com/ja/elpy-rpc-python-version/の問題を回避するための設定
+  (flycheck-python-flake8-executable . "flake8")
+  :bind (elpy-mode-map
+         ("C-c C-r f" . elpy-format-code))
+  :hook ((elpy-mode-hook . flycheck-mode)))
+
+(leaf ein
+  :doc "Emacs IPython Notebook"
+  :req "emacs-25" "websocket-1.12" "anaphora-1.0.4" "request-0.3.3" "deferred-0.5" "polymode-0.2.2" "dash-2.13.0" "with-editor-0.-1"
+  :tag "reproducible research" "literate programming" "jupyter" "emacs>=25"
+  :url "https://github.com/dickmao/emacs-ipython-notebook"
+  :added "2022-01-10"
+  :emacs>= 25
+  :ensure t
+  :custom
+  (ein:output-area-inlined-images . t))
 
 (leaf company-c-headers
   :doc "Company mode backend for C/C++ header files"
@@ -365,6 +395,16 @@
   :bind ("C-x g" . magit-status)
   )
 
+(leaf yascroll
+  :doc "Yet Another Scroll Bar Mode"
+  :req "emacs-26.1"
+  :tag "convenience" "emacs>=26.1"
+  :url "https://github.com/emacsorphanage/yascroll"
+  :added "2022-01-10"
+  :emacs>= 26.1
+  :ensure t
+  :custom(global-yascroll-bar-mode . 1))
+
 (provide 'init)
 
 (custom-set-variables
@@ -377,7 +417,7 @@
      ("melpa" . "https://melpa.org/packages/")
      ("gnu" . "https://elpa.gnu.org/packages/")))
  '(package-selected-packages
-   '(ivy lsp-ui flycheck-inline yatemplate yasnippet-snippets company-math company-quickhelp company-prescient macrostep leaf-tree leaf-convert blackout el-get hydra leaf-keywords dracula-theme company-c-headers ein pyvenv counsel-projectile ivy-rich docker magit which-key counsel elscreen multi-term swiper lsp-pyright lsp-mode flycheck yasnippet company rainbow-delimiters highlight-indent-guides blacken leaf)))
+   '(yascroll ivy lsp-ui flycheck-inline yatemplate yasnippet-snippets company-math company-quickhelp company-prescient macrostep leaf-tree leaf-convert blackout el-get hydra leaf-keywords dracula-theme company-c-headers ein pyvenv counsel-projectile ivy-rich docker magit which-key counsel elscreen multi-term swiper lsp-pyright lsp-mode flycheck yasnippet company rainbow-delimiters highlight-indent-guides blacken leaf)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
