@@ -93,7 +93,7 @@
 (setq visible-bell t)
 (global-linum-mode t)
 (windmove-default-keybindings)
-(global-set-key (kbd "C-c C-j") 'goto-line)
+(global-set-key (kbd "C-j") 'goto-line)
 (load-theme 'monokai t)
 
 (leaf leaf
