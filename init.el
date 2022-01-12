@@ -95,6 +95,7 @@
 (windmove-default-keybindings)
 (global-set-key (kbd "C-j") 'goto-line)
 (load-theme 'monokai t)
+(set-face-attribute 'region nil :background "blue")
 
 (leaf leaf
   :config
