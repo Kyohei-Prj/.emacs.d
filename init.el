@@ -63,7 +63,8 @@
 			elpy
 			monokai-theme
 			yascroll
-			ccls))
+			ccls
+			rustic))
   (package-initialize)
   (unless package-archive-contents
     (package-refresh-contents))
@@ -431,7 +432,7 @@
      ("melpa" . "https://melpa.org/packages/")
      ("gnu" . "https://elpa.gnu.org/packages/")))
  '(package-selected-packages
-   '(ccls yascroll ivy lsp-ui flycheck-inline yatemplate yasnippet-snippets company-math company-quickhelp company-prescient macrostep leaf-tree leaf-convert blackout el-get hydra leaf-keywords dracula-theme company-c-headers ein pyvenv counsel-projectile ivy-rich docker magit which-key counsel elscreen multi-term swiper lsp-pyright lsp-mode flycheck yasnippet company rainbow-delimiters highlight-indent-guides blacken leaf)))
+   '(rustic ccls yascroll ivy lsp-ui flycheck-inline yatemplate yasnippet-snippets company-math company-quickhelp company-prescient macrostep leaf-tree leaf-convert blackout el-get hydra leaf-keywords dracula-theme company-c-headers ein pyvenv counsel-projectile ivy-rich docker magit which-key counsel elscreen multi-term swiper lsp-pyright lsp-mode flycheck yasnippet company rainbow-delimiters highlight-indent-guides blacken leaf)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
