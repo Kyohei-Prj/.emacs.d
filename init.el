@@ -62,7 +62,8 @@
 			exec-path-from-shell
 			elpy
 			monokai-theme
-			yascroll))
+			yascroll
+			ccls))
   (package-initialize)
   (unless package-archive-contents
     (package-refresh-contents))
@@ -153,7 +154,7 @@
   :custom ((company-tooltip-limit             . 12)
            (company-idle-delay                . 0)
            (company-minimum-prefix-length     . 1)
-           (company-transformers              . '(company-sort-by-occurrence))
+	   (company-transformers              . '(company-sort-by-backend-importance))
            (global-company-mode               . t)
            (company-selection-wrap-around     . t)
            (vompany-tooltip-align-annotations . t))
@@ -307,6 +308,18 @@
   :config
   (add-to-list 'company-backends 'company-c-headers))
 
+(leaf ccls
+  :doc "ccls client for lsp-mode"
+  :req "emacs-25.1" "lsp-mode-6.3.1" "dash-2.14.1"
+  :tag "c++" "lsp" "languages" "emacs>=25.1"
+  :url "https://github.com/MaskRay/emacs-ccls"
+  :added "2022-01-15"
+  :emacs>= 25.1
+  :ensure t
+  :custom (ccls-executable . "/usr/bin/ccls")
+  :hook ((c-mode c++-mode objc-mode) . (lambda () (require 'ccls) (lsp-deferred)))
+  :after lsp-mode)
+
 (leaf elscreen
   :doc "Emacs window session manager"
   :req "emacs-24"
@@ -418,7 +431,7 @@
      ("melpa" . "https://melpa.org/packages/")
      ("gnu" . "https://elpa.gnu.org/packages/")))
  '(package-selected-packages
-   '(yascroll ivy lsp-ui flycheck-inline yatemplate yasnippet-snippets company-math company-quickhelp company-prescient macrostep leaf-tree leaf-convert blackout el-get hydra leaf-keywords dracula-theme company-c-headers ein pyvenv counsel-projectile ivy-rich docker magit which-key counsel elscreen multi-term swiper lsp-pyright lsp-mode flycheck yasnippet company rainbow-delimiters highlight-indent-guides blacken leaf)))
+   '(ccls yascroll ivy lsp-ui flycheck-inline yatemplate yasnippet-snippets company-math company-quickhelp company-prescient macrostep leaf-tree leaf-convert blackout el-get hydra leaf-keywords dracula-theme company-c-headers ein pyvenv counsel-projectile ivy-rich docker magit which-key counsel elscreen multi-term swiper lsp-pyright lsp-mode flycheck yasnippet company rainbow-delimiters highlight-indent-guides blacken leaf)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
