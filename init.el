@@ -98,6 +98,7 @@
 (global-set-key (kbd "C-j") 'goto-line)
 (load-theme 'monokai t)
 (set-face-attribute 'region nil :background "blue")
+(recentf-mode 1)
 
 (leaf leaf
   :config
