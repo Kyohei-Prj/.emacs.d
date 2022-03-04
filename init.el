@@ -64,7 +64,8 @@
 			monokai-theme
 			yascroll
 			ccls
-			rustic))
+			rustic
+			lsp-java))
   (package-initialize)
   (unless package-archive-contents
     (package-refresh-contents))
