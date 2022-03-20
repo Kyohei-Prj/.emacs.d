@@ -1,4 +1,4 @@
-;;; init.el --- My init.el  -*- lexical-binding: t; -*-
+;; init.el --- My init.el  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020  Naoya Yamashita
 
@@ -100,6 +100,7 @@
 (load-theme 'monokai t)
 (set-face-attribute 'region nil :background "blue")
 (recentf-mode 1)
+
 
 (leaf leaf
   :config
@@ -234,11 +235,12 @@
   :commands (lsp lsp-deferred)
   :config
   :custom ((lsp-keymap-prefix                  . "C-c l")
-           (lsp-log-io                         . t)
+           (lsp-log-io                         . nil)
            (lsp-keep-workspace-alive           . nil)
            (lsp-document-sync-method           . 2)
            (lsp-response-timeout               . 5)
-           (lsp-enable-file-watchers           . nil))
+           (lsp-enable-file-watchers           . nil)
+	   (lsp-print-io                       . nil))
   :hook (lsp-mode-hook . lsp-headerline-breadcrumb-mode)
   :init (leaf lsp-ui
           :ensure t
@@ -262,17 +264,31 @@
                                ("C-c d" . lsp-ui-doc-mode)))
           :hook ((lsp-mode-hook . lsp-ui-mode))))
 
-;; (leaf lsp-pyright
-;;   :doc "Python LSP client using Pyright"
-;;   :req "emacs-26.1" "lsp-mode-7.0" "dash-2.18.0" "ht-2.0"
-;;   :tag "lsp" "tools" "languages" "emacs>=26.1"
-;;   :url "https://github.com/emacs-lsp/lsp-pyright"
-;;   :added "2022-01-09"
-;;   :emacs>= 26.1
-;;   :ensure t
-;;   :hook (python-mode-hook . (lambda ()
-;;                               (require 'lsp-pyright)
-;;                               (lsp-deferred))))
+(leaf lsp-java
+  :doc "Java support for lsp-mode"
+  :req "emacs-25.1" "lsp-mode-6.0" "markdown-mode-2.3" "dash-2.18.0" "f-0.20.0" "ht-2.0" "request-0.3.0" "treemacs-2.5" "dap-mode-0.5"
+  :tag "tools" "languague" "emacs>=25.1"
+  :url "https://github.com/emacs-lsp/lsp-java"
+  :added "2022-03-12"
+  :emacs>= 25.1
+  :ensure t
+  :require t
+  :custom (lsp-java-format-on-type-enabled . nil)
+  :hook (java-mode-hook . lsp))
+
+(defun java-getter-setter ()
+  (interactive)
+  (save-excursion
+    (lsp-java-generate-getters-and-setters)
+    (c-indent-defun)))
+(global-set-key (kbd "C-c C-j C-s") 'java-getter-setter)
+
+(defun java-generate-overrides ()
+  (interactive)
+  (save-excursion
+    (lsp-java-generate-overrides)
+    (c-indent-defun)))
+(global-set-key (kbd "C-c C-j C-o") 'java-generate-overrides)
 
 (leaf elpy
   :ensure t
@@ -288,16 +304,28 @@
          ("C-c C-r f" . elpy-format-code))
   :hook ((elpy-mode-hook . flycheck-mode)))
 
-(leaf ein
-  :doc "Emacs IPython Notebook"
-  :req "emacs-25" "websocket-1.12" "anaphora-1.0.4" "request-0.3.3" "deferred-0.5" "polymode-0.2.2" "dash-2.13.0" "with-editor-0.-1"
-  :tag "reproducible research" "literate programming" "jupyter" "emacs>=25"
-  :url "https://github.com/dickmao/emacs-ipython-notebook"
-  :added "2022-01-10"
-  :emacs>= 25
-  :ensure t
-  :custom
-  (ein:output-area-inlined-images . t))
+;; (leaf lsp-pyright
+;;   :doc "Python LSP client using Pyright"
+;;   :req "emacs-26.1" "lsp-mode-7.0" "dash-2.18.0" "ht-2.0"
+;;   :tag "lsp" "tools" "languages" "emacs>=26.1"
+;;   :url "https://github.com/emacs-lsp/lsp-pyright"
+;;   :added "2022-03-13"
+;;   :emacs>= 26.1
+;;   :ensure t
+;;   :require t
+;;   :hook (python-mode-hook . lsp))
+
+;; (leaf ein
+;;   :doc "Emacs IPython Notebook"
+;;   :req "emacs-25" "websocket-1.12" "anaphora-1.0.4" "request-0.3.3" "deferred-0.5" "polymode-0.2.2" "dash-2.13.0" "with-editor-0.-1"
+;;   :tag "reproducible research" "literate programming" "jupyter" "emacs>=25"
+;;   :url "https://github.com/dickmao/emacs-ipython-notebook"
+;;   :added "2022-01-10"
+;;   :emacs>= 25
+;;   :ensure t
+;;   :custom
+;;   :hook (ein:ipynb-mode-hook . lsp)
+;;   (ein:output-area-inlined-images . t))
 
 (leaf company-c-headers
   :doc "Company mode backend for C/C++ header files"
@@ -434,7 +462,7 @@
      ("melpa" . "https://melpa.org/packages/")
      ("gnu" . "https://elpa.gnu.org/packages/")))
  '(package-selected-packages
-   '(rustic ccls yascroll ivy lsp-ui flycheck-inline yatemplate yasnippet-snippets company-math company-quickhelp company-prescient macrostep leaf-tree leaf-convert blackout el-get hydra leaf-keywords dracula-theme company-c-headers ein pyvenv counsel-projectile ivy-rich docker magit which-key counsel elscreen multi-term swiper lsp-pyright lsp-mode flycheck yasnippet company rainbow-delimiters highlight-indent-guides blacken leaf)))
+   '(java-imports java-snippets javadoc-lookup lsp-java rustic ccls yascroll ivy lsp-ui flycheck-inline yatemplate yasnippet-snippets company-math company-quickhelp company-prescient macrostep leaf-tree leaf-convert blackout el-get hydra leaf-keywords dracula-theme company-c-headers ein pyvenv counsel-projectile ivy-rich docker magit which-key counsel elscreen multi-term swiper lsp-pyright lsp-mode flycheck yasnippet company rainbow-delimiters highlight-indent-guides blacken leaf)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
