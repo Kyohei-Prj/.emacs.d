@@ -97,7 +97,7 @@
 (global-linum-mode t)
 (windmove-default-keybindings)
 (global-set-key (kbd "C-j") 'goto-line)
-(load-theme 'monokai t)
+(load-theme 'dracula t)
 (set-face-attribute 'region nil :background "blue")
 (recentf-mode 1)
 
