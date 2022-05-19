@@ -315,17 +315,17 @@
 ;;   :require t
 ;;   :hook (python-mode-hook . lsp))
 
-;; (leaf ein
-;;   :doc "Emacs IPython Notebook"
-;;   :req "emacs-25" "websocket-1.12" "anaphora-1.0.4" "request-0.3.3" "deferred-0.5" "polymode-0.2.2" "dash-2.13.0" "with-editor-0.-1"
-;;   :tag "reproducible research" "literate programming" "jupyter" "emacs>=25"
-;;   :url "https://github.com/dickmao/emacs-ipython-notebook"
-;;   :added "2022-01-10"
-;;   :emacs>= 25
-;;   :ensure t
-;;   :custom
-;;   :hook (ein:ipynb-mode-hook . lsp)
-;;   (ein:output-area-inlined-images . t))
+(leaf ein
+  :doc "Emacs IPython Notebook"
+  :req "emacs-25" "websocket-1.12" "anaphora-1.0.4" "request-0.3.3" "deferred-0.5" "polymode-0.2.2" "dash-2.13.0" "with-editor-0.-1"
+  :tag "reproducible research" "literate programming" "jupyter" "emacs>=25"
+  :url "https://github.com/dickmao/emacs-ipython-notebook"
+  :added "2022-01-10"
+  :emacs>= 25
+  :ensure t
+  :custom
+  :hook (ein:ipynb-mode-hook . lsp)
+  (ein:output-area-inlined-images . t))
 
 (leaf company-c-headers
   :doc "Company mode backend for C/C++ header files"
