@@ -125,7 +125,7 @@
   :ensure t
   :config
   (elscreen-start)
-  (setq elscreen-display-tab nil))
+  (setq elscreen-display-tab t))
 
 (leaf counsel
   :ensure t
