@@ -150,6 +150,7 @@
 
 (leaf counsel-projectile
   :ensure t
+  :bind(("C-x p C-f" . 'counsel-projectile-find-file))
   :config
   (counsel-projectile-mode))
 
@@ -182,4 +183,4 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(ein:basecell-input-area-face ((t (:extend t :background "color-235")))))
