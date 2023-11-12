@@ -3,27 +3,7 @@
    'package-archives '(("org"   . "https://orgmode.org/elpa/")
                        ("melpa" . "https://melpa.org/packages/")
                        ("gnu"   . "https://elpa.gnu.org/packages/")))
-  (setq package-list '(leaf
-                        highlight-indent-guides
-                        rainbow-delimiters
-                        company-jedi
-                        yasnippet
-                        flycheck
-                        lsp-mode
-                        swiper
-                        multi-term
-                        elscreen
-                        which-key
-                        magit
-                        docker
-                        counsel-projectile
-                        pyvenv
-                        ein
-                        dracula-theme
-			elpy
-			yascroll
-			rustic
-			neotree))
+  (setq package-list '(leaf))
   (package-initialize)
   (unless package-archive-contents
     (package-refresh-contents))
@@ -44,56 +24,52 @@
     (leaf-keywords-init)))
 
 
-;; personal settings
 (tool-bar-mode -1)
 (tooltip-mode -1)
 (menu-bar-mode -1)
 (scroll-bar-mode nil)
 (set-fringe-mode 10)
-(set-face-attribute 'default nil :height 100)
 (setq inhibit-startup-message t)
 (setq visible-bell t)
-(global-linum-mode t)
 (windmove-default-keybindings)
 (global-set-key (kbd "C-j") 'goto-line)
-(load-theme 'dracula t)
-(set-face-attribute 'region nil :background "blue")
+(global-display-line-numbers-mode)
 (recentf-mode 1)
 
+(leaf pyvenv
+  :ensure t)
 
-;; Enable company-mode for auto-completion
-(leaf company
+(leaf eglot
+  :ensure t
+  :hook (python-mode-hook . eglot-ensure)
   :config
-  (add-hook 'after-init-hook 'global-company-mode)
+  (add-to-list 'eglot-server-programs '(pythom-mode . ("pyright-langserver" "--stdio"))))
+
+(leaf company
+  :ensure t
+  :hook (prog-mode-hook .company-mode)
+  :config
   (setq company-minimum-prefix-length 1))
 
-;; Configure elpy for Python development
-(leaf elpy
+(leaf flycheck
   :ensure t
-  :config
-  (elpy-enable)
-  (setq python-shell-interpreter "python3"))
+  :hook (prog-mode-hook . flycheck-mode))
 
-;; Configure jedi for elpy
-(leaf elpy
-  :config
-  (setq elpy-rpc-backend "jedi"))
+(leaf python-mode
+  :ensure t
+  :mode ("\\.py\\'" . python-mode))
 
-;; Enable auto-completion in EIN notebooks
+(leaf company-jedi
+  :ensure t
+  :after company)
+
 (leaf ein
   :ensure t
   :config
-  (leaf ein-notebook
-    :require t)
-  (leaf company-jedi
-    :ensure t
-    :require t
-    :after ein
-    :config
-    (add-to-list 'company-backends 'company-jedi))
-  (add-hook 'ein:connect-mode-hook 'company-mode))
+  (add-hook 'ein:notebook-mode-hook
+            (lambda ()
+              (setq-local company-backends '(company-jedi)))))
 
-;; Configure swiper for buffer and file searching
 (leaf swiper
   :ensure t
   :bind (("C-s" . swiper))
@@ -159,28 +135,20 @@
   :config
   (load-theme 'dracula t))
 
-;; Add Rust language support with rust-analyzer LSP
 (leaf rustic
   :ensure t
   :config
   (setq rustic-lsp-server 'rust-analyzer))
-
-(leaf neotree
-  :ensure t
-  :bind ("M-t" . neotree-toggle))
-
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(ein:output-area-inlined-images t)
- '(package-selected-packages
-   '(neotree rustic dracula-theme counsel-projectile docker magit which-key counsel elscreen multi-term yasnippet rainbow-delimiters highlight-indent-guides swiper company-jedi ein elpy blackout el-get hydra leaf-keywords)))
+ '(package-selected-packages '(leaf)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(ein:basecell-input-area-face ((t (:extend t :background "color-235")))))
+ '(ein:basecell-input-area-face ((t (:extend t :background "color-234")))))
