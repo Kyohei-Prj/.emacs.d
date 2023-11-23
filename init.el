@@ -1,15 +1,13 @@
+;; <leaf-install-code>
 (eval-and-compile
   (customize-set-variable
-   'package-archives '(("org"   . "https://orgmode.org/elpa/")
+   'package-archives '(("org" . "https://orgmode.org/elpa/")
                        ("melpa" . "https://melpa.org/packages/")
-                       ("gnu"   . "https://elpa.gnu.org/packages/")))
-  (setq package-list '(leaf))
+                       ("gnu" . "https://elpa.gnu.org/packages/")))
   (package-initialize)
-  (unless package-archive-contents
-    (package-refresh-contents))
-  (dolist (package package-list)
-    (unless (package-installed-p package)
-      (package-install package)))
+  (unless (package-installed-p 'leaf)
+    (package-refresh-contents)
+    (package-install 'leaf))
 
   (leaf leaf-keywords
     :ensure t
@@ -22,61 +20,51 @@
     :config
     ;; initialize leaf-keywords.el
     (leaf-keywords-init)))
+;; </leaf-install-code>
 
+;; leaf utilities
+(leaf leaf-tree :ensure t)
+(leaf leaf-convert :ensure t)
 
-(tool-bar-mode -1)
-(tooltip-mode -1)
-(menu-bar-mode -1)
-(scroll-bar-mode nil)
-(set-fringe-mode 10)
-(setq inhibit-startup-message t)
-(setq visible-bell t)
-(windmove-default-keybindings)
-(global-set-key (kbd "C-j") 'goto-line)
-(global-display-line-numbers-mode)
-(recentf-mode 1)
-
-(leaf pyvenv
-  :ensure t)
-
-(leaf eglot
-  :ensure t
-  :hook (python-mode-hook . eglot-ensure)
+;; configure builtin
+(leaf cus-start
+  :doc "define customization properties of builtins"
+  :tag "builtin" "internal"
   :config
-  (add-to-list 'eglot-server-programs '(pythom-mode . ("pyright-langserver" "--stdio"))))
+  (load-theme 'modus-vivendi t)
+  (windmove-default-keybindings)
+  (tool-bar-mode -1)
+  (menu-bar-mode -1)
+  (scroll-bar-mode -1)
+  (recentf-mode 1)
+  (savehist-mode 1)
+  (save-place-mode 1)
+  (global-auto-revert-mode 1)
+  (electric-pair-mode 1)
+  :custom
+  (inhibit-startup-message . t)
+  (visible-bell . t)
+  (use-dialog-box . nil)
+  (history-lenght . 25)
+  (global-auto-revert-non-file-buffers . t)
+  (modus-themes-mode-line . '(accented borderless))
+  (modus-themes-region . '(bg-only))
+  (modus-themes-completions . 'opinionated)
+  (modus-themes-bold-constructs . t)
+  (modus-themes-italic-constructs . t)
+  (modus-themes-paren-match . '(bold intense))
+  (modus-themes-syntax . '(yellow-comments)))
 
-(leaf company
-  :ensure t
-  :hook (prog-mode-hook .company-mode)
-  :config
-  (setq company-minimum-prefix-length 1))
+(leaf prog-mode
+  :hook
+  (prog-mode-hook . display-line-numbers-mode))
 
-(leaf flycheck
-  :ensure t
-  :hook (prog-mode-hook . flycheck-mode))
+(leaf autorevert
+  :doc "revert buffers when files on disk change"
+  :tag "builtin"
+  :custom ((auto-revert-interval . 0.1))
+  :global-minor-mode global-auto-revert-mode)
 
-(leaf python-mode
-  :ensure t
-  :mode ("\\.py\\'" . python-mode))
-
-(leaf company-jedi
-  :ensure t
-  :after company)
-
-(leaf ein
-  :ensure t
-  :config
-  (add-hook 'ein:notebook-mode-hook
-            (lambda ()
-              (setq-local company-backends '(company-jedi)))))
-
-(leaf swiper
-  :ensure t
-  :bind (("C-s" . swiper))
-  :config
-  (setq swiper-include-line-number-in-search t))
-
-;; Add packages for better coding experience
 (leaf highlight-indent-guides
   :ensure t
   :hook
@@ -87,30 +75,23 @@
   :hook
   (prog-mode . rainbow-delimiters-mode))
 
-(leaf yasnippet
-  :ensure t
-  :config
-  (yas-global-mode 1))
-
 (leaf multi-term
   :ensure t
-  :config
-  (setq multi-term-program "/bin/zsh"))
+  :custom
+  (multi-term-program . "/bin/zsh"))
 
 (leaf elscreen
   :ensure t
   :config
   (elscreen-start)
-  (setq elscreen-display-tab t))
+  :custom
+  (elscreen-display-tab . t))
 
-(leaf counsel
+(leaf swiper
   :ensure t
-  :bind (("M-x" . counsel-M-x)
-         ("C-x C-f" . counsel-find-file)
-         ("C-x b" . counsel-switch-buffer)
-         ("C-c r" . counsel-recentf))
-  :config
-  (setq ivy-initial-inputs-alist nil))
+  :bind (("C-s" . swiper))
+  :custom
+  (swiper-include-line-number-in-search . t))
 
 (leaf which-key
   :ensure t
@@ -121,8 +102,14 @@
   :ensure t
   :bind (("C-x g" . magit-status)))
 
-(leaf docker
-  :ensure t)
+(leaf counsel
+  :ensure t
+  :bind (("M-x" . counsel-M-x)
+         ("C-x C-f" . counsel-find-file)
+         ("C-x b" . counsel-switch-buffer)
+         ("C-c r" . counsel-recentf))
+  :custom
+  (ivy-initial-inputs-alist . nil))
 
 (leaf counsel-projectile
   :ensure t
@@ -130,25 +117,42 @@
   :config
   (counsel-projectile-mode))
 
-(leaf dracula-theme
+(leaf company
+  :ensure t
+  :hook (prog-mode-hook . company-mode)
+  :custom
+  (company-minimum-prefix-length . 1))
+
+;; add company-quickhelp
+
+(leaf flycheck
+  :ensure t
+  :hook (prog-mode-hook . flycheck-mode))
+
+(leaf python
   :ensure t
   :config
-  (load-theme 'dracula t))
+  (leaf pyvenv
+    :ensure t
+    :config (pyvenv-mode 1)))
+
+(leaf elpy
+  :ensure t
+  :config (elpy-enable))
+
+(leaf ein
+  :ensure t)
 
 (leaf rustic
   :ensure t
   :config
-  (setq rustic-lsp-server 'rust-analyzer))
+  (add-to-list 'exec-path (expand-file-name "~/.cargo/bin"))
+  (add-hook 'rust-mode-hook 'lsp-deferred))
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages '(leaf)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(ein:basecell-input-area-face ((t (:extend t :background "color-234")))))
+(leaf yasnippet
+  :ensure t
+  :config
+  (yas-global-mode 1))
+
+(provide 'init)
+;;; init.el ends here
