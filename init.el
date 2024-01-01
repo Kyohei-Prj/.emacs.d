@@ -1,4 +1,9 @@
-;; <leaf-install-code>
+;;; init.el --- my Emacs configuration:
+
+;;; Commentray:
+;; mainly for Python dev
+
+;;; Code:
 (eval-and-compile
   (customize-set-variable
    'package-archives '(("org" . "https://orgmode.org/elpa/")
@@ -55,25 +60,12 @@
   (modus-themes-paren-match . '(bold intense))
   (modus-themes-syntax . '(yellow-comments)))
 
-(leaf prog-mode
-  :hook
-  (prog-mode-hook . display-line-numbers-mode))
-
+;; productivity utils
 (leaf autorevert
   :doc "revert buffers when files on disk change"
   :tag "builtin"
   :custom ((auto-revert-interval . 0.1))
   :global-minor-mode global-auto-revert-mode)
-
-(leaf highlight-indent-guides
-  :ensure t
-  :hook
-  (prog-mode . highlight-indent-guides-mode))
-
-(leaf rainbow-delimiters
-  :ensure t
-  :hook
-  (prog-mode . rainbow-delimiters-mode))
 
 (leaf multi-term
   :ensure t
@@ -98,10 +90,6 @@
   :config
   (which-key-mode))
 
-(leaf magit
-  :ensure t
-  :bind (("C-x g" . magit-status)))
-
 (leaf counsel
   :ensure t
   :bind (("M-x" . counsel-M-x)
@@ -117,28 +105,85 @@
   :config
   (counsel-projectile-mode))
 
-(leaf company
-  :ensure t
-  :hook (prog-mode-hook . company-mode)
-  :custom
-  (company-minimum-prefix-length . 1))
+;; general programming utils
+(leaf prog-mode
+  :hook
+  (prog-mode-hook . display-line-numbers-mode))
 
-;; add company-quickhelp
+(leaf code-cells
+  :ensure t)
+
+(leaf isend-mode
+  :ensure t)
+
+(leaf highlight-indent-guides
+  :ensure t
+  :hook
+  (prog-mode-hook . highlight-indent-guides-mode))
+
+(leaf rainbow-delimiters
+  :ensure t
+  :hook
+  (prog-mode-hook . rainbow-delimiters-mode))
+
+(leaf tree-sitter
+  :ensure t)
+
+(leaf tree-sitter-langs
+  :ensure t)
+
+(leaf mwim
+  :ensure t
+  :bind (("C-a" . mwim-beginning-of-code-or-line)
+	 ("C-e" . mwim-end-of-code-or-line)))
+
+(leaf magit
+  :ensure t
+  :bind (("C-x g" . magit-status)))
 
 (leaf flycheck
   :ensure t
   :hook (prog-mode-hook . flycheck-mode))
 
-(leaf python
+(leaf yasnippet
   :ensure t
   :config
+  (yas-global-mode 1))
+
+(leaf company
+  :ensure t
+  :hook (prog-mode-hook . company-mode)
+  :custom
+  (company-minimum-prefix-length . 1))
+;; add company-quickhelp
+
+(leaf lsp-mode
+  :ensure t)
+
+(leaf lsp-ui
+  :ensure t)
+
+(leaf python
+  :ensure t
+  :hook
+  (python-mode-hook . code-cells-mode)
+  :custom
+  (python-indent-guess-indent-offset . nil)
+  (python-shell-interpreter . "ipython")
+    :config
   (leaf pyvenv
     :ensure t
     :config (pyvenv-mode 1)))
 
-(leaf elpy
+(leaf lsp-pyright
   :ensure t
-  :config (elpy-enable))
+  :hook (python-mode-hook . (lambda ()
+			    (require 'lsp-pyright)
+			    (lsp-deferred))))
+
+;; (leaf elpy
+;;   :ensure t
+;;   :config (elpy-enable))
 
 (leaf ein
   :ensure t)
@@ -149,10 +194,64 @@
   (add-to-list 'exec-path (expand-file-name "~/.cargo/bin"))
   (add-hook 'rust-mode-hook 'lsp-deferred))
 
-(leaf yasnippet
-  :ensure t
-  :config
-  (yas-global-mode 1))
+;; Connect Python script and EIN
+(defun mark-region-between-point (start end)
+  (interactive "r")
+  (push-mark start nil t)
+  (goto-char end)
+  (activate-mark))
+
+(defun my-ein-workspace-insert-cell-below (contents destination)
+  (with-current-buffer destination
+    (end-of-buffer)
+    (funcall (key-binding (kbd "C-c C-b")))
+    (insert contents)
+    (funcall (key-binding (kbd "C-c C-c")))
+    (message "execute cell")))
+
+(defun my-isend-send ()
+  (interactive)
+  (isend--check)
+
+  (let* ((region-active (region-active-p))
+
+	 (bds (isend--region-boundaries))
+	 (begin (car bds))
+	 (end (cdr bds))
+
+	 (origin (current-buffer))
+	 (destination (get-buffer isend--command-buffer)))
+    (with-temp-buffer
+      (insert-buffer-substring origin begin end)
+      (let ((contents (buffer-substring-no-properties (point-min) (point-max))))
+	(my-ein-workspace-insert-cell-below contents destination))))
+  (deactivate-mark))
+
+(defun my-execute-cell (start end)
+  (interactive (code-cells--bounds (prefix-numeric-value current-prefix-arg)
+				   'use-region
+				   'no-header))
+  (mark-region-between-point start end)
+  (my-isend-send)
+  (pulse-momentary-highlight-region start end))
+
+(add-hook 'python-mode-hook
+          (lambda ()
+            (local-set-key (kbd "C-c C-c") 'my-execute-cell)))
+
+(defun create-code-block ()
+  "Insert # %% at the cursor position and another two lines below."
+  (interactive)
+  (forward-line 1)
+  (insert "\n# %%\n\n")
+  (forward-line -1)
+)
+
+(add-hook 'python-mode-hook
+          (lambda ()
+            (local-set-key (kbd "C-c C-b") 'create-code-block)))
+
+
 
 (provide 'init)
 ;;; init.el ends here
