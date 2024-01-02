@@ -163,6 +163,11 @@
 (leaf lsp-ui
   :ensure t)
 
+(leaf py-autopep8
+  :ensure t
+  :hook
+  (python-mode-hook . py-autopep8-mode))
+
 (leaf python
   :ensure t
   :hook
@@ -255,3 +260,17 @@
 
 (provide 'init)
 ;;; init.el ends here
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(seq rustic ein lsp-pyright python py-autopep8 lsp-ui lsp-mode company yasnippet flycheck magit mwim tree-sitter-langs tree-sitter rainbow-delimiters highlight-indent-guides isend-mode code-cells counsel-projectile counsel which-key swiper elscreen multi-term leaf-convert leaf-tree blackout el-get hydra leaf-keywords))
+ '(warning-suppress-types '((ein))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
