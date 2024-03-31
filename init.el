@@ -154,16 +154,17 @@
   :ensure t
   :hook (prog-mode-hook . company-mode)
   :custom
-  (company-minimum-prefix-length . 1))
+  (company-minimum-prefix-length . 1)
+  (company-idle-delay . 0.01))
 ;; add company-quickhelp
 
-(setq gc-cons-threshold 100000000)
-(setq read-process-output-max (* 1024 1024))
 (setenv "LSP_USE_PLISTS" "true")
+(setq gc-cons-threshold 100000000)
+(setq read-process-output-max (* 1048576 4))
 (leaf lsp-mode
   :ensure t
   :custom
-  (lsp-idle-delay . 0.2)
+  (lsp-idle-delay . 0.01)
   (lsp-log-io . nil))
 
 (leaf lsp-ui
