@@ -157,8 +157,14 @@
   (company-minimum-prefix-length . 1))
 ;; add company-quickhelp
 
+(setq gc-cons-threshold 100000000)
+(setq read-process-output-max (* 1024 1024))
+(setenv "LSP_USE_PLISTS" "true")
 (leaf lsp-mode
-  :ensure t)
+  :ensure t
+  :custom
+  (lsp-idle-delay . 0.2)
+  (lsp-log-io . nil))
 
 (leaf lsp-ui
   :ensure t)
@@ -266,7 +272,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(seq rustic ein lsp-pyright python py-autopep8 lsp-ui lsp-mode company yasnippet flycheck magit mwim tree-sitter-langs tree-sitter rainbow-delimiters highlight-indent-guides isend-mode code-cells counsel-projectile counsel which-key swiper elscreen multi-term leaf-convert leaf-tree blackout el-get hydra leaf-keywords))
+   '(seq rustic ein python py-autopep8 company yasnippet flycheck magit mwim tree-sitter-langs tree-sitter rainbow-delimiters highlight-indent-guides isend-mode code-cells counsel-projectile counsel which-key swiper elscreen multi-term leaf-convert leaf-tree blackout el-get hydra leaf-keywords))
  '(warning-suppress-types '((ein))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
