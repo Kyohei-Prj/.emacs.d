@@ -52,6 +52,7 @@
   (use-dialog-box . nil)
   (history-lenght . 25)
   (global-auto-revert-non-file-buffers . t)
+  (package-install-upgrade-built-in . t)
   (modus-themes-mode-line . '(accented borderless))
   (modus-themes-region . '(bg-only))
   (modus-themes-completions . 'opinionated)
@@ -192,6 +193,10 @@
   :hook (python-mode-hook . (lambda ()
 			    (require 'lsp-pyright)
 			    (lsp-deferred))))
+
+(leaf poetry
+  :ensure t
+  :bind (("C-x p" . poetry)))
 
 ;; (leaf elpy
 ;;   :ensure t
