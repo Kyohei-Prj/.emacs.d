@@ -299,6 +299,13 @@
       orig-result)))
 (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
 
+(leaf slime
+  :ensure t
+  :config
+  (slime-setup '(slisme-fancy slime-company))
+  :custom
+  (inferior-lisp-program . "sbcl"))
+
 
 (provide 'init)
 ;;; init.el ends here
