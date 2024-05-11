@@ -299,10 +299,13 @@
       orig-result)))
 (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
 
+(leaf slime-company
+  :ensure t)
+
 (leaf slime
   :ensure t
   :config
-  (slime-setup '(slisme-fancy slime-company))
+  (slime-setup '(slime-fancy slime-company))
   :custom
   (inferior-lisp-program . "sbcl"))
 
