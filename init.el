@@ -197,7 +197,7 @@
 
 (leaf poetry
   :ensure t
-  :bind (("C-x p" . poetry)))
+  :bind (("C-c p" . poetry)))
 
 ;; (leaf elpy
 ;;   :ensure t
