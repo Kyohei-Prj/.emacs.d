@@ -46,6 +46,7 @@
   (save-place-mode 1)
   (global-auto-revert-mode 1)
   (electric-pair-mode 1)
+  (hl-line-mode 1)
   :custom
   (inhibit-startup-message . t)
   (visible-bell . t)
@@ -212,6 +213,16 @@
   (add-to-list 'exec-path (expand-file-name "~/.cargo/bin"))
   (add-hook 'rust-mode-hook 'lsp-deferred))
 
+(leaf skewer-mode
+  :ensure t)
+
+(leaf nodejs-repl
+  :ensure t
+  :bind (
+	 ("C-c C-e" . nodejs-repl-send-line)
+	 ("C-c C-c" . nodejs-repl-send-region)
+	 ))
+
 ;; Connect Python script and EIN
 (defun mark-region-between-point (start end)
   (interactive "r")
@@ -318,7 +329,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(seq rustic ein python py-autopep8 company yasnippet flycheck magit mwim tree-sitter-langs tree-sitter rainbow-delimiters highlight-indent-guides isend-mode code-cells counsel-projectile counsel which-key swiper elscreen multi-term leaf-convert leaf-tree blackout el-get hydra leaf-keywords))
+   '(bind-key eglot eldoc erc faceup flymake idlwave jsonrpc org project soap-client tramp use-package verilog-mode xref seq rustic ein python py-autopep8 company yasnippet flycheck magit mwim tree-sitter-langs tree-sitter rainbow-delimiters highlight-indent-guides isend-mode code-cells counsel-projectile counsel which-key swiper elscreen multi-term leaf-convert leaf-tree blackout el-get hydra leaf-keywords))
  '(warning-suppress-types '((ein))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
