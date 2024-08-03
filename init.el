@@ -216,6 +216,12 @@
 (leaf skewer-mode
   :ensure t)
 
+(leaf js2-mode
+  :ensure t
+  :mode "\\.js\\'"
+  :config
+  (add-hook 'js2-mode-hook 'lsp-deferred))
+
 (leaf nodejs-repl
   :ensure t
   :bind (
