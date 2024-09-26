@@ -107,6 +107,11 @@
   :config
   (counsel-projectile-mode))
 
+(leaf exec-path-from-shell
+  :ensure t
+  :config
+  (exec-path-from-shell-initialize))
+
 ;; general programming utils
 (leaf prog-mode
   :hook
@@ -218,9 +223,10 @@
 
 (leaf js2-mode
   :ensure t
-  :mode "\\.js\\'"
+  :mode '("\\.js\\'" "\\.jsx\\'")
   :config
-  (add-hook 'js2-mode-hook 'lsp-deferred))
+  (add-hook 'js2-mode-hook 'lsp-deferred)
+  (add-hook 'js2-mode-hook #'add-node-modules-path))
 
 (leaf nodejs-repl
   :ensure t
@@ -334,8 +340,9 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(js-indent-level 2)
  '(package-selected-packages
-   '(bind-key eglot eldoc erc faceup flymake idlwave jsonrpc org project soap-client tramp use-package verilog-mode xref seq rustic ein python py-autopep8 company yasnippet flycheck magit mwim tree-sitter-langs tree-sitter rainbow-delimiters highlight-indent-guides isend-mode code-cells counsel-projectile counsel which-key swiper elscreen multi-term leaf-convert leaf-tree blackout el-get hydra leaf-keywords))
+   '(exec-path-from-shell add-node-modules-path bind-key eglot eldoc erc faceup flymake idlwave jsonrpc org project soap-client tramp use-package verilog-mode xref seq rustic ein python py-autopep8 company yasnippet flycheck magit mwim tree-sitter-langs tree-sitter rainbow-delimiters highlight-indent-guides isend-mode code-cells counsel-projectile counsel which-key swiper elscreen multi-term leaf-convert leaf-tree blackout el-get hydra leaf-keywords))
  '(warning-suppress-types '((ein))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
