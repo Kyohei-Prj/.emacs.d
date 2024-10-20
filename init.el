@@ -183,6 +183,11 @@
   :hook
   (python-mode-hook . py-autopep8-mode))
 
+(leaf ruff-format
+  :ensure t
+  :hook
+  (python-mode-hook . ruff-format-on-save-mode))
+
 (leaf python
   :ensure t
   :hook
@@ -331,6 +336,18 @@
   (slime-setup '(slime-fancy slime-company))
   :custom
   (inferior-lisp-program . "sbcl"))
+
+(leaf lsp-java
+  :ensure t
+  :config
+  (add-hook 'java-mode-hook 'lsp-deferred))
+
+
+(leaf docker
+  :ensure t)
+
+(leaf dockerfile-mode
+  :ensure t)
 
 
 (provide 'init)
