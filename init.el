@@ -167,8 +167,8 @@
 
 
 (setenv "LSP_USE_PLISTS" "true")
-(setq gc-cons-threshold 100000000)
-(setq read-process-output-max (* 1048576 4))
+(setq gc-cons-threshold (* 100000000 5))
+(setq read-process-output-max (* 1048576 16))
 (leaf lsp-mode
   :ensure t
   :custom
@@ -176,17 +176,10 @@
   (lsp-log-io . nil))
 
 (leaf lsp-ui
-  :ensure t)
-
-(leaf py-autopep8
   :ensure t
-  :hook
-  (python-mode-hook . py-autopep8-mode))
-
-(leaf ruff-format
-  :ensure t
-  :hook
-  (python-mode-hook . ruff-format-on-save-mode))
+  :custom
+  (lsp-ui-doc-enable t)
+  (lsp-ui-sideline-enable t))
 
 (leaf python
   :ensure t
@@ -199,6 +192,16 @@
   (leaf pyvenv
     :ensure t
     :config (pyvenv-mode 1)))
+
+(leaf uv-mode
+  :ensure t
+  :hook
+  (python-mode-hook . uv-mode-auto-activate-hook))
+
+(leaf ruff-format
+  :ensure t
+  :hook
+  (python-mode-hook . ruff-format-on-save-mode))
 
 (leaf lsp-pyright
   :ensure t
