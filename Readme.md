@@ -1,6 +1,10 @@
 # lsp booster
 https://github.com/blahgeek/emacs-lsp-booster/releases
 
+# Emacs package dependencies
+pacman -Syu ripgrep
+pacman -Syu shellcheck
+
 # common lisp
 sudo apt install sbcl
 
