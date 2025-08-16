@@ -588,7 +588,7 @@
   :hook
   (js2-mode-hook . lsp-deferred)
   :custom
-  (js2-basic-offset . 2)
+  (js-indent-level . 2)
   (js2-bounce-indent-p . t))
 
 (leaf add-node-modules-path
