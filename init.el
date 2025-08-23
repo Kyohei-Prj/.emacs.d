@@ -286,16 +286,69 @@
   :ensure t
   :hook (prog-mode-hook . rainbow-delimiters-mode))
 
-(leaf tree-sitter
-  :ensure t
-  :config
-  (require 'tree-sitter-langs)
-  (global-tree-sitter-mode)
-  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+(leaf treesit
+  :mode (("\\.tsx\\'"       . tsx-ts-mode)
+         ("\\.js\\'"        . tsx-ts-mode)
+         ("\\.mjs\\'"       . typescript-ts-mode)
+         ("\\.mts\\'"       . typescript-ts-mode)
+         ("\\.cjs\\'"       . typescript-ts-mode)
+         ("\\.ts\\'"        . tsx-ts-mode)
+         ("\\.jsx\\'"       . tsx-ts-mode)
+         ("\\.css\\'"       . css-ts-mode)
+         ("\\.json\\'"      . json-ts-mode)
+         ("\\.Dockerfile\\'" . dockerfile-ts-mode)
+         ("\\.prisma\\'"    . prisma-ts-mode)
+         ("\\.py\\'"    . python-ts-mode))
+  :preface
+  (defun os/setup-install-grammars ()
+    "Install Tree-sitter grammars if they are absent."
+    (interactive)
+    (dolist (grammar
+             '((css . ("https://github.com/tree-sitter/tree-sitter-css"))
+               (bash "https://github.com/tree-sitter/tree-sitter-bash")
+               (html . ("https://github.com/tree-sitter/tree-sitter-html"))
+               (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript"))
+               (json . ("https://github.com/tree-sitter/tree-sitter-json"))
+               (python . ("https://github.com/tree-sitter/tree-sitter-python"))
+               (go "https://github.com/tree-sitter/tree-sitter-go")
+               (markdown "https://github.com/ikatyang/tree-sitter-markdown")
+               (make "https://github.com/alemuller/tree-sitter-make")
+               (elisp "https://github.com/Wilfred/tree-sitter-elisp")
+               (cmake "https://github.com/uyha/tree-sitter-cmake")
+               (c "https://github.com/tree-sitter/tree-sitter-c")
+               (cpp "https://github.com/tree-sitter/tree-sitter-cpp")
+               (toml "https://github.com/tree-sitter/tree-sitter-toml")
+               (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript"))
+               (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript"))
+               (yaml . ("https://github.com/ikatyang/tree-sitter-yaml"))
+               (prisma "https://github.com/victorhqc/tree-sitter-prisma")))
+      (add-to-list 'treesit-language-source-alist grammar)
+      ;; Only install grammar if it is missing
+      (unless (treesit-language-available-p (car grammar))
+        (treesit-install-language-grammar (car grammar)))))
 
-(leaf tree-sitter-langs
-  :ensure t
-  :after tree-sitter)
+  :config
+  (setq treesit-font-lock-level 4)
+  ;; Major mode remapping
+  (dolist (mapping
+           '((python-mode     . python-ts-mode)
+             (css-mode        . css-ts-mode)
+             (typescript-mode . typescript-ts-mode)
+             (js-mode         . typescript-ts-mode)
+             (js2-mode        . typescript-ts-mode)
+             (c-mode          . c-ts-mode)
+             (c++-mode        . c++-ts-mode)
+             (c-or-c++-mode   . c-or-c++-ts-mode)
+             (bash-mode       . bash-ts-mode)
+             (css-mode        . css-ts-mode)
+             (json-mode       . json-ts-mode)
+             (js-json-mode    . json-ts-mode)
+             (sh-mode         . bash-ts-mode)
+             (sh-base-mode    . bash-ts-mode)))
+    (add-to-list 'major-mode-remap-alist mapping))
+
+  ;; Install grammars on startup
+  (os/setup-install-grammars))
 
 (leaf mwim
   :ensure t
@@ -470,8 +523,8 @@
 (leaf python
   :ensure t
   :hook
-  (python-mode-hook . code-cells-mode)
-  (python-mode-hook . (lambda ()
+  (python-ts-mode-hook . code-cells-mode)
+  (python-ts-mode-hook . (lambda ()
                         (setq-local tab-width 4)
                         (setq-local indent-tabs-mode nil)))
   :custom
@@ -494,16 +547,16 @@
 (leaf uv-mode
   :ensure t
   :hook
-  (python-mode-hook . uv-mode-auto-activate-hook))
+  (python-ts-mode-hook . uv-mode-auto-activate-hook))
 
 (leaf ruff-format
   :ensure t
   :hook
-  (python-mode-hook . ruff-format-on-save-mode))
+  (python-ts-mode-hook . ruff-format-on-save-mode))
 
 (leaf lsp-pyright
   :ensure t
-  :hook (python-mode-hook . (lambda ()
+  :hook (python-ts-mode-hook . (lambda ()
                               (require 'lsp-pyright)
                               (lsp-deferred))))
 
@@ -565,7 +618,7 @@
   (insert "\n# %%\n\n")
   (forward-line -1))
 
-(add-hook 'python-mode-hook
+(add-hook 'python-ts-mode-hook
           (lambda ()
             (local-set-key (kbd "C-c C-c") 'my/execute-cell)
             (local-set-key (kbd "C-c C-b") 'my/create-code-block)))
@@ -581,20 +634,53 @@
   (rustic-format-on-save . t)
   (rustic-lsp-client . 'lsp-mode))
 
-;;;; JavaScript Development
-(leaf js2-mode
-  :ensure t
-  :mode '("\\.js\\'" "\\.jsx\\'")
+;;;; Frontend Development
+(leaf typescript-ts-mode
   :hook
-  (js2-mode-hook . lsp-deferred)
-  :custom
-  (js-indent-level . 2)
-  (js2-bounce-indent-p . t))
+  (typescript-ts-mode-hook . lsp-deferred))
+
+(leaf tsx-ts-mode
+  :hook
+  (tsx-ts-mode-hook . lsp-deferred))
+
+(leaf lsp-eslint
+  :after lsp-mode)
+
+(leaf lsp-tailwindcss
+  :ensure t
+  :hook
+  (css-ts-mode-hook . lsp-deferred))
+
+(leaf lsp-tailwindcss
+  :ensure t
+  :after lsp-mode
+  :init
+  ;; enable add-on mode (note singular name)
+  (setq lsp-tailwindcss-add-on-mode t)
+  ;; optionally restrict/extend which major-modes will trigger it
+  (setq lsp-tailwindcss-major-modes
+        '(rjsx-mode web-mode html-mode css-mode
+                    typescript-mode typescript-tsx-mode typescript-ts-mode
+                    tsx-ts-mode js-mode js-jsx-mode js-ts-mode))
+  ;; if your project doesn't have tailwind.config.js and you still want it
+  ;; to start, you can skip the config check (use only if you know what you do)
+  (setq lsp-tailwindcss-skip-config-check t)
+  :hook ((typescript-ts-mode-hook . lsp-deferred)
+         (tsx-ts-mode-hook . lsp-deferred)
+         (js-ts-mode-hook . lsp-deferred)
+         (js-mode-hook . lsp-deferred)
+         (css-mode-hook . lsp-deferred)
+         (html-mode-hook . lsp-deferred)))
+
+
+(leaf css-ts-mode
+  :config
+  (setq css-ts-offset-level  2))
 
 (leaf add-node-modules-path
   :ensure t
   :hook
-  (js2-mode-hook . add-node-modules-path))
+  (tsx-ts-mode-hook . add-node-modules-path))
 
 (leaf nodejs-repl
   :ensure t
@@ -604,7 +690,7 @@
 (leaf skewer-mode
   :ensure t
   :hook
-  (js2-mode-hook . skewer-mode))
+  (tsx-ts-mode-hook . skewer-mode))
 
 ;;;; Java Development
 (leaf lsp-java
