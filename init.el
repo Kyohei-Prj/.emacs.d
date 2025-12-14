@@ -117,9 +117,10 @@
 ;;;; Theme and Appearance
 (leaf ef-themes
   :ensure t
+  :init
+  (ef-themes-take-over-modus-themes-mode 1)
   :config
-  (ef-themes-select 'ef-dark)
-  (put 'ef-themes-select 'safe-local-variable #'symbolp))
+  (modus-themes-load-theme 'ef-dark))
 
 ;;;; Modern Completion Framework
 (leaf vertico
