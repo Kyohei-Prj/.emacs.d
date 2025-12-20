@@ -46,7 +46,8 @@
            term-mode-hook
            shell-mode-hook
            eshell-mode-hook
-           treemacs-mode-hook))
+           treemacs-mode-hook
+	   vterm-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 ;; --- Editor Behavior ---
@@ -73,6 +74,22 @@
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
+
+
+
+(global-hl-line-mode t)
+(add-hook 'after-load-theme-hook
+          (lambda ()
+            (unless (display-graphic-p)
+              (set-face-attribute
+               'hl-line nil
+               :background
+               (face-background 'region)))))
+(dolist (hook '(term-mode-hook
+                eshell-mode-hook
+                shell-mode-hook
+		vterm-mode-hook))
+  (add-hook hook (lambda () (hl-line-mode -1))))
 
 ;; ===========================================================
 ;; 3. NAVIGATION (VERTICO / CONSULT / ORDERLESS)
@@ -332,8 +349,10 @@
 (use-package dockerfile-mode :mode "Dockerfile\\'")
 
 ;; ===========================================================
-;; 8. CUSTOM TAB BAR (C-z)
+;; 8. MISC
 ;; ===========================================================
+
+;; Custom tab-bar-mode (C-z)
 (use-package tab-bar
   :ensure nil
   :init (tab-bar-mode 1)
@@ -358,6 +377,10 @@
     (define-key my-tab-bar-map (kbd (number-to-string i))
                 `(lambda () (interactive) (tab-bar-select-tab ,(+ i 1))))))
 
+;; terminal emulation
+(use-package multi-vterm
+  :ensure t)
+
 (provide 'init)
 ;;; init.el ends here
 (custom-set-variables
@@ -367,18 +390,18 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    '(add-node-modules-path apheleia blackout cape code-cells
-                           corfu-terminal diff-hl docker
-                           dockerfile-mode doom-modeline doom-themes
-                           ef-themes ein el-get elscreen
-                           embark-consult exec-path-from-shell
-                           flycheck highlight-indent-guides isend-mode
-                           kind-icon leaf-convert leaf-tree lsp-java
-                           lsp-pyright lsp-tailwindcss lsp-ui magit
-                           marginalia multi-term mwim nerd-icons
-                           nodejs-repl orderless poetry projectile
-                           rainbow-delimiters ruff-format rustic
-                           skewer-mode slime-company swiper
-                           treesit-auto uv-mode vertico yasnippet))
+			   corfu-terminal diff-hl docker
+			   dockerfile-mode doom-modeline doom-themes
+			   ef-themes ein el-get elscreen
+			   embark-consult exec-path-from-shell
+			   flycheck highlight-indent-guides isend-mode
+			   kind-icon leaf-convert leaf-tree lsp-java
+			   lsp-pyright lsp-tailwindcss lsp-ui magit
+			   marginalia multi-term multi-vterm mwim
+			   nerd-icons nodejs-repl orderless poetry
+			   projectile rainbow-delimiters ruff-format
+			   rustic skewer-mode slime-company swiper
+			   treesit-auto uv-mode vertico yasnippet))
  '(which-key-idle-delay 0.5 nil nil "Customized with use-package which-key")
  '(which-key-idle-secondary-delay 0.05 nil nil "Customized with use-package which-key"))
 (custom-set-faces

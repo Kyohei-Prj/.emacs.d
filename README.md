@@ -331,12 +331,18 @@ cargo install emacs-lsp-booster
 
 Ensure `emacs-lsp-booster` is in your `PATH`.
 
-### Project wide grep
+### Additional package dependencies
 
-For project wide search:
+For project wide grep:
 
 ```bash
 sudo pacman -S ripgrep
+```
+
+For multi-vterm:
+
+```bash
+sudo pacman -S cmake
 ```
 
 
