@@ -4,7 +4,7 @@
 ;; 1. SYSTEM, PACKAGE MANAGER & DEFAULTS
 ;; ===========================================================
 ;; --- Garbage Collection (Startup Speed) ---
-(setq gc-cons-threshold (* 50 1000 1000))
+(setq gc-cons-threshold (* 64 1000 1000))
 
 ;; --- Package Management Setup ---
 (require 'package)
@@ -205,6 +205,8 @@
   (apheleia-global-mode +1))
 
 ;; --- LSP Configuration ---
+(setenv "LSP_USE_PLISTS" "true")
+(setq read-process-output-max (* 1024 1024 32)) ; 32MB
 (use-package lsp-mode
   :commands (lsp lsp-deferred)
   :hook ((lsp-mode . lsp-diagnostics-mode)
@@ -213,11 +215,6 @@
            typescript-ts-mode
            js-ts-mode
            python-ts-mode) . lsp-deferred))
-  :init
-  ;; Performance Settings
-  (setq gc-cons-threshold (* 1024 1024 100))
-  (setenv "LSP_USE_PLISTS" "true")
-  (setq read-process-output-max (* 1024 1024 32))
   :custom
   (lsp-idle-delay 0.01)
   (lsp-log-io nil)
@@ -388,20 +385,10 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   '(add-node-modules-path apheleia blackout cape code-cells
-			   corfu-terminal diff-hl docker
-			   dockerfile-mode doom-modeline doom-themes
-			   ef-themes ein el-get elscreen
-			   embark-consult exec-path-from-shell
-			   flycheck highlight-indent-guides isend-mode
-			   kind-icon leaf-convert leaf-tree lsp-java
-			   lsp-pyright lsp-tailwindcss lsp-ui magit
-			   marginalia multi-term multi-vterm mwim
-			   nerd-icons nodejs-repl orderless poetry
-			   projectile rainbow-delimiters ruff-format
-			   rustic skewer-mode slime-company swiper
-			   treesit-auto uv-mode vertico yasnippet))
+ '(package-selected-packages nil)
+ '(package-vc-selected-packages
+   '((lsp-tailwindcss :vc-backend Git :url
+		      "https://github.com/merrickluo/lsp-tailwindcss")))
  '(which-key-idle-delay 0.5 nil nil "Customized with use-package which-key")
  '(which-key-idle-secondary-delay 0.05 nil nil "Customized with use-package which-key"))
 (custom-set-faces
