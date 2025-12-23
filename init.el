@@ -375,8 +375,7 @@
                 `(lambda () (interactive) (tab-bar-select-tab ,(+ i 1))))))
 
 ;; terminal emulation
-(use-package multi-vterm
-  :ensure t)
+(use-package multi-vterm)
 
 (provide 'init)
 ;;; init.el ends here
