@@ -78,6 +78,11 @@
 
 
 (global-hl-line-mode t)
+(unless (display-graphic-p)
+  (set-face-attribute 'region nil
+		      :background "color-60"
+		      :foreground nil))
+
 (add-hook 'after-load-theme-hook
           (lambda ()
             (unless (display-graphic-p)
@@ -104,7 +109,14 @@
   :custom
   (completion-styles '(orderless basic))
   (completion-category-defaults nil)
-  (completion-category-overrides '((file (styles partial-completion)))))
+  (completion-category-overrides '((file (styles partial-completion))))
+  :config
+  ;; Resetting the match faces to inherit from 'default' 
+  ;; This effectively hides the color/bolding of matches in Corfu.
+  (set-face-attribute 'orderless-match-face-0 nil :inherit 'default :weight 'normal :foreground "color-231" :background "color-60")
+  (set-face-attribute 'orderless-match-face-1 nil :inherit 'default :weight 'normal :foreground "color-231" :background "color-60")
+  (set-face-attribute 'orderless-match-face-2 nil :inherit 'default :weight 'normal :foreground "color-231" :background "color-60")
+  (set-face-attribute 'orderless-match-face-3 nil :inherit 'default :weight 'normal :foreground "color-231" :background "color-60"))
 
 (use-package marginalia
   :init (marginalia-mode))
@@ -135,6 +147,7 @@
   (corfu-popupinfo-delay '(0.5 . 0.2))
   (corfu-preview-current nil)
   (corfu-preselect 'first)
+  (corfu-on-exact-match nil)
   (corfu-scroll-margin 5)
   (corfu-max-width 150)
   (corfu-min-width 50)
@@ -144,7 +157,11 @@
 (use-package corfu-terminal
   :after corfu
   :config (unless (display-graphic-p)
-            (corfu-terminal-mode +1)))
+            (corfu-terminal-mode +1)
+	    (set-face-attribute 'corfu-current nil
+				:background "color-60"
+				:foreground "color-231"
+				:weight 'bold)))
 
 ;; Icons in completion menu-bar-mode
 (use-package kind-icon
