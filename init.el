@@ -375,6 +375,7 @@
                 `(lambda () (interactive) (tab-bar-select-tab ,(+ i 1))))))
 
 ;; terminal emulation
+(use-package vterm)
 (use-package multi-vterm)
 
 (provide 'init)
@@ -384,10 +385,20 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages nil)
- '(package-vc-selected-packages
-   '((lsp-tailwindcss :vc-backend Git :url
-		      "https://github.com/merrickluo/lsp-tailwindcss")))
+ '(package-selected-packages
+   '(add-node-modules-path apheleia blackout cape code-cells
+			   corfu-terminal diff-hl docker
+			   dockerfile-mode doom-modeline doom-themes
+			   ef-themes ein el-get elscreen
+			   embark-consult exec-path-from-shell
+			   flycheck highlight-indent-guides isend-mode
+			   kind-icon leaf-convert leaf-tree lsp-java
+			   lsp-pyright lsp-tailwindcss lsp-ui magit
+			   marginalia multi-term multi-vterm mwim
+			   nerd-icons nodejs-repl orderless poetry
+			   projectile rainbow-delimiters ruff-format
+			   rustic skewer-mode slime-company swiper
+			   treesit-auto uv-mode vertico yasnippet))
  '(which-key-idle-delay 0.5 nil nil "Customized with use-package which-key")
  '(which-key-idle-secondary-delay 0.05 nil nil "Customized with use-package which-key"))
 (custom-set-faces
