@@ -207,76 +207,98 @@
 ;;   (treesit-auto-add-to-auto-mode-alist 'all)
 ;;   (global-treesit-auto-mode))
 
+;; (use-package treesit-auto
+;;   :custom
+;;   (treesit-auto-install 'prompt)
+;;   :config
+;;   (let ((abi (when (fboundp 'treesit-library-abi-version)
+;; 	       (treesit-library-abi-version))))
+;;     (message "[treesit] detected Tree-sitter ABI version: %s" abi)
+;;     (if (and abi (<= abi 14))
+;; 	(progn
+;; 	  (setq treesit-auto-recipe-list
+;; 		(list
+;; 		 (make-treesit-auto-recipe
+;; 		  :lang 'css
+;; 		  :ts-mode 'css-ts-mode
+;; 		  :remap '(css-mode)
+;; 		  :url "https://github.com/tree-sitter/tree-sitter-css"
+;; 		  :revision "v0.25.0"
+;; 		  :source-dir "src"
+;; 		  :ext "\\.css\\'")
+;; 		 (make-treesit-auto-recipe
+;; 		  :lang 'html
+;; 		  :ts-mode 'html-ts-mode
+;; 		  :remap '(html-mode)
+;; 		  :url "https://github.com/tree-sitter/tree-sitter-html"
+;; 		  :revision "v0.23.4"
+;; 		  :source-dir "src"
+;; 		  :ext "\\.html?\\'")
+;; 		 (make-treesit-auto-recipe
+;; 		  :lang 'javascript
+;; 		  :ts-mode 'js-ts-mode
+;; 		  :remap '(js-mode js2-mode)
+;; 		  :url "https://github.com/tree-sitter/tree-sitter-javascript"
+;; 		  :revision "v0.24.0"
+;; 		  :source-dir "src"
+;; 		  :ext "\\.js\\'")
+;; 		 (make-treesit-auto-recipe
+;; 		  :lang 'json
+;; 		  :ts-mode 'json-ts-mode
+;; 		  :remap '(json-mode)
+;; 		  :url "https://github.com/tree-sitter/tree-sitter-json"
+;; 		  :revision "v0.23.0"
+;; 		  :source-dir "src"
+;; 		  :ext "\\.json\\'")
+;; 		 (make-treesit-auto-recipe
+;; 		  :lang 'python
+;; 		  :ts-mode 'python-ts-mode
+;; 		  :remap '(python-mode)
+;; 		  :url "https://github.com/tree-sitter/tree-sitter-python"
+;; 		  :revision "v0.23.3"
+;; 		  :source-dir "src"
+;; 		  :ext "\\.py\\'")
+;; 		 (make-treesit-auto-recipe
+;; 		  :lang 'typescript
+;; 		  :ts-mode 'typescript-ts-mode
+;; 		  :remap '(typescript-mode)
+;; 		  :url "https://github.com/tree-sitter/tree-sitter-typescript"
+;; 		  :revision "v0.23.2"
+;; 		  :source-dir "typescript/src"
+;; 		  :ext "\\.ts\\'")
+;; 		 (make-treesit-auto-recipe
+;; 		  :lang 'tsx
+;; 		  :ts-mode 'tsx-ts-mode
+;; 		  :remap '(typescript-mode)
+;; 		  :url "https://github.com/tree-sitter/tree-sitter-typescript"
+;; 		  :revision "v0.23.2"
+;; 		  :source-dir "tsx/src"
+;; 		  :ext "\\.tsx\\'")))
+;; 	  (message "[treesit] applied pinned grammar recipts for ABI <= 14"))
+;;       (treesit-auto-add-to-auto-mode-alist 'all)
+;;       (global-treesit-auto-mode))))
+
 (use-package treesit-auto
   :custom
   (treesit-auto-install 'prompt)
   :config
+  ;; Use 'add-to-list' instead of 'setq' to avoid wiping the default recipes
   (let ((abi (when (fboundp 'treesit-library-abi-version)
-	       (treesit-library-abi-version))))
-    (message "[treesit] detected Tree-sitter ABI version: %s" abi)
-    (if (and abi (<= abi 14))
-	(progn
-	  (setq treesit-auto-recipe-list
-		(list
-		 (make-treesit-auto-recipe
-		  :lang 'css
-		  :ts-mode 'css-ts-mode
-		  :remap '(css-mode)
-		  :url "https://github.com/tree-sitter/tree-sitter-css"
-		  :revision "v0.25.0"
-		  :source-dir "src"
-		  :ext "\\.css\\'")
-		 (make-treesit-auto-recipe
-		  :lang 'html
-		  :ts-mode 'html-ts-mode
-		  :remap '(html-mode)
-		  :url "https://github.com/tree-sitter/tree-sitter-html"
-		  :revision "v0.23.4"
-		  :source-dir "src"
-		  :ext "\\.html?\\'")
-		 (make-treesit-auto-recipe
-		  :lang 'javascript
-		  :ts-mode 'js-ts-mode
-		  :remap '(js-mode js2-mode)
-		  :url "https://github.com/tree-sitter/tree-sitter-javascript"
-		  :revision "v0.24.0"
-		  :source-dir "src"
-		  :ext "\\.js\\'")
-		 (make-treesit-auto-recipe
-		  :lang 'json
-		  :ts-mode 'json-ts-mode
-		  :remap '(json-mode)
-		  :url "https://github.com/tree-sitter/tree-sitter-json"
-		  :revision "v0.23.0"
-		  :source-dir "src"
-		  :ext "\\.json\\'")
-		 (make-treesit-auto-recipe
-		  :lang 'python
-		  :ts-mode 'python-ts-mode
-		  :remap '(python-mode)
-		  :url "https://github.com/tree-sitter/tree-sitter-python"
-		  :revision "v0.23.3"
-		  :source-dir "src"
-		  :ext "\\.py\\'")
-		 (make-treesit-auto-recipe
-		  :lang 'typescript
-		  :ts-mode 'typescript-ts-mode
-		  :remap '(typescript-mode)
-		  :url "https://github.com/tree-sitter/tree-sitter-typescript"
-		  :revision "v0.23.2"
-		  :source-dir "typescript/src"
-		  :ext "\\.ts\\'")
-		 (make-treesit-auto-recipe
-		  :lang 'tsx
-		  :ts-mode 'tsx-ts-mode
-		  :remap '(typescript-mode)
-		  :url "https://github.com/tree-sitter/tree-sitter-typescript"
-		  :revision "v0.23.2"
-		  :source-dir "tsx/src"
-		  :ext "\\.tsx\\'")))
-	  (message "[treesit] applied pinned grammar recipts for ABI <= 14"))
-      (treesit-auto-add-to-auto-mode-alist 'all)
-      (global-treesit-auto-mode))))
+               (treesit-library-abi-version))))
+    (when (and abi (<= abi 14))
+      (add-to-list 'treesit-auto-recipe-list
+                   (make-treesit-auto-recipe
+                    :lang 'python
+                    :ts-mode 'python-ts-mode
+                    :remap '(python-mode)
+                    :url "https://github.com/tree-sitter/tree-sitter-python"
+                    :revision "v0.23.3" ; Revision more likely to be ABI 14 compatible
+                    :source-dir "src"
+                    :ext "\\.py\\'"))))
+  (treesit-auto-add-to-auto-mode-alist 'all)
+  (global-treesit-auto-mode))
+
+
 
 ;; --- Formatting (Apheleia + Prettier) ---
 (use-package apheleia
@@ -404,7 +426,7 @@
             (add-to-list 'lsp-tailwindcss-major-modes tw-major-mode)))
 
 (use-package add-node-modules-path
-  :hook (tsx-ts-mode-hook . add-node-modules-path))
+  :hook (tsx-ts-mode . add-node-modules-path))
 
 ;; --- Markdown ---
 (use-package markdown-mode
@@ -413,9 +435,9 @@
 ;; --- Python ---
 (use-package lsp-pyright
   :custom (lsp-pyright-langserver-command "pyright")
-  :hook (python-mode . (lambda ()
-                         (require 'lsp-pyright)
-                         (lsp-deferred))))
+  :hook (python-ts-mode . (lambda ()
+                            (require 'lsp-pyright)
+                            (lsp-deferred))))
 
 (use-package pyvenv
   :config (pyvenv-mode 1))
@@ -424,7 +446,7 @@
   :hook (python-ts-mode . uv-mode-auto-activate-hook))
 
 (use-package ruff-format
-  :hook (python-ts-mode-hook . ruff-format-on-save-mode))
+  :hook (python-ts-mode . ruff-format-on-save-mode))
 
 (use-package ein
   :custom (ein:output-area-inlined-images t))
