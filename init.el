@@ -200,104 +200,91 @@
 ;; 6. LSP & TREESITTER ENGINE
 ;; ===========================================================
 
-;; --- Global Treesitter ---
-;; (use-package treesit-auto
-;;   :custom (treesit-auto-install 'prompt)
-;;   :config
-;;   (treesit-auto-add-to-auto-mode-alist 'all)
-;;   (global-treesit-auto-mode))
-
-;; (use-package treesit-auto
-;;   :custom
-;;   (treesit-auto-install 'prompt)
-;;   :config
-;;   (let ((abi (when (fboundp 'treesit-library-abi-version)
-;; 	       (treesit-library-abi-version))))
-;;     (message "[treesit] detected Tree-sitter ABI version: %s" abi)
-;;     (if (and abi (<= abi 14))
-;; 	(progn
-;; 	  (setq treesit-auto-recipe-list
-;; 		(list
-;; 		 (make-treesit-auto-recipe
-;; 		  :lang 'css
-;; 		  :ts-mode 'css-ts-mode
-;; 		  :remap '(css-mode)
-;; 		  :url "https://github.com/tree-sitter/tree-sitter-css"
-;; 		  :revision "v0.25.0"
-;; 		  :source-dir "src"
-;; 		  :ext "\\.css\\'")
-;; 		 (make-treesit-auto-recipe
-;; 		  :lang 'html
-;; 		  :ts-mode 'html-ts-mode
-;; 		  :remap '(html-mode)
-;; 		  :url "https://github.com/tree-sitter/tree-sitter-html"
-;; 		  :revision "v0.23.4"
-;; 		  :source-dir "src"
-;; 		  :ext "\\.html?\\'")
-;; 		 (make-treesit-auto-recipe
-;; 		  :lang 'javascript
-;; 		  :ts-mode 'js-ts-mode
-;; 		  :remap '(js-mode js2-mode)
-;; 		  :url "https://github.com/tree-sitter/tree-sitter-javascript"
-;; 		  :revision "v0.24.0"
-;; 		  :source-dir "src"
-;; 		  :ext "\\.js\\'")
-;; 		 (make-treesit-auto-recipe
-;; 		  :lang 'json
-;; 		  :ts-mode 'json-ts-mode
-;; 		  :remap '(json-mode)
-;; 		  :url "https://github.com/tree-sitter/tree-sitter-json"
-;; 		  :revision "v0.23.0"
-;; 		  :source-dir "src"
-;; 		  :ext "\\.json\\'")
-;; 		 (make-treesit-auto-recipe
-;; 		  :lang 'python
-;; 		  :ts-mode 'python-ts-mode
-;; 		  :remap '(python-mode)
-;; 		  :url "https://github.com/tree-sitter/tree-sitter-python"
-;; 		  :revision "v0.23.3"
-;; 		  :source-dir "src"
-;; 		  :ext "\\.py\\'")
-;; 		 (make-treesit-auto-recipe
-;; 		  :lang 'typescript
-;; 		  :ts-mode 'typescript-ts-mode
-;; 		  :remap '(typescript-mode)
-;; 		  :url "https://github.com/tree-sitter/tree-sitter-typescript"
-;; 		  :revision "v0.23.2"
-;; 		  :source-dir "typescript/src"
-;; 		  :ext "\\.ts\\'")
-;; 		 (make-treesit-auto-recipe
-;; 		  :lang 'tsx
-;; 		  :ts-mode 'tsx-ts-mode
-;; 		  :remap '(typescript-mode)
-;; 		  :url "https://github.com/tree-sitter/tree-sitter-typescript"
-;; 		  :revision "v0.23.2"
-;; 		  :source-dir "tsx/src"
-;; 		  :ext "\\.tsx\\'")))
-;; 	  (message "[treesit] applied pinned grammar recipts for ABI <= 14"))
-;;       (treesit-auto-add-to-auto-mode-alist 'all)
-;;       (global-treesit-auto-mode))))
-
+;;--- Global Treesitter ---
 (use-package treesit-auto
   :custom
   (treesit-auto-install 'prompt)
   :config
-  ;; Use 'add-to-list' instead of 'setq' to avoid wiping the default recipes
   (let ((abi (when (fboundp 'treesit-library-abi-version)
                (treesit-library-abi-version))))
+    (message "[treesit] detected Tree-sitter ABI version: %s" abi)
+    
     (when (and abi (<= abi 14))
-      (add-to-list 'treesit-auto-recipe-list
-                   (make-treesit-auto-recipe
-                    :lang 'python
-                    :ts-mode 'python-ts-mode
-                    :remap '(python-mode)
-                    :url "https://github.com/tree-sitter/tree-sitter-python"
-                    :revision "v0.23.3" ; Revision more likely to be ABI 14 compatible
-                    :source-dir "src"
-                    :ext "\\.py\\'"))))
+      (message "[treesit] applying pinned grammar recipes for ABI <= 14")
+      
+      ;; You must include the list variable in every push call
+      (push (make-treesit-auto-recipe
+             :lang 'css
+	     :ts-mode 'css-ts-mode
+	     :remap '(css-mode)
+             :url "https://github.com/tree-sitter/tree-sitter-css"
+             :revision "v0.23.1" ; Note: v0.25.0 might require ABI 15
+             :source-dir "src"
+	     :ext "\\.css\\'")
+            treesit-auto-recipe-list)
+
+      (push (make-treesit-auto-recipe
+             :lang 'html
+	     :ts-mode 'html-ts-mode
+	     :remap '(html-mode)
+             :url "https://github.com/tree-sitter/tree-sitter-html"
+             :revision "v0.23.4"
+             :source-dir "src"
+	     :ext "\\.html?\\'")
+            treesit-auto-recipe-list)
+
+      (push (make-treesit-auto-recipe
+             :lang 'javascript
+	     :ts-mode 'js-ts-mode
+	     :remap '(js-mode js2-mode)
+             :url "https://github.com/tree-sitter/tree-sitter-javascript"
+             :revision "v0.23.1"
+             :source-dir "src"
+	     :ext "\\.js\\'")
+            treesit-auto-recipe-list)
+
+      (push (make-treesit-auto-recipe
+             :lang 'json
+	     :ts-mode 'json-ts-mode
+	     :remap '(json-mode)
+             :url "https://github.com/tree-sitter/tree-sitter-json"
+             :revision "v0.23.0"
+             :source-dir "src"
+	     :ext "\\.json\\'")
+            treesit-auto-recipe-list)
+
+      (push (make-treesit-auto-recipe
+             :lang 'python
+	     :ts-mode 'python-ts-mode
+	     :remap '(python-mode)
+             :url "https://github.com/tree-sitter/tree-sitter-python"
+             :revision "v0.23.3"
+             :source-dir "src"
+	     :ext "\\.py\\'")
+            treesit-auto-recipe-list)
+
+      (push (make-treesit-auto-recipe
+             :lang 'typescript
+	     :ts-mode 'typescript-ts-mode
+	     :remap '(typescript-mode)
+             :url "https://github.com/tree-sitter/tree-sitter-typescript"
+             :revision "v0.23.2"
+             :source-dir "typescript/src"
+	     :ext "\\.ts\\'")
+            treesit-auto-recipe-list)
+
+      (push (make-treesit-auto-recipe
+             :lang 'tsx
+	     :ts-mode 'tsx-ts-mode
+	     :remap '(typescript-mode)
+             :url "https://github.com/tree-sitter/tree-sitter-typescript"
+             :revision "v0.23.2"
+             :source-dir "tsx/src"
+	     :ext "\\.tsx\\'")
+            treesit-auto-recipe-list)))
+
   (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode))
-
 
 
 ;; --- Formatting (Apheleia + Prettier) ---

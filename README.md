@@ -342,7 +342,7 @@ sudo pacman -S ripgrep
 For multi-vterm:
 
 ```bash
-sudo pacman -S cmake
+sudo pacman -S cmake libvterm
 ```
 
 
