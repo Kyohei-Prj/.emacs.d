@@ -343,6 +343,7 @@ For multi-vterm:
 
 ```bash
 sudo pacman -S cmake libvterm
+# sudo apt install libvterm-dev
 ```
 
 
