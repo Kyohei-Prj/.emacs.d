@@ -4,7 +4,7 @@
 ;; 1. SYSTEM, PACKAGE MANAGER & DEFAULTS
 ;; ===========================================================
 ;; --- Garbage Collection (Startup Speed) ---
-(setq gc-cons-threshold (* 64 1000 1000))
+(setq gc-cons-threshold (* 32 1000 1000))
 
 ;; --- Package Management Setup ---
 (require 'package)
@@ -59,6 +59,8 @@
   :custom
   (which-key-idle-delay 0.5)
   (which-key-idle-secondary-delay 0.05))
+(setq make-backup-files nil)
+
 
 ;; ===========================================================
 ;; 2. THEME & VISUALS
@@ -483,19 +485,17 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(add-node-modules-path apheleia blackout cape code-cells
-			   corfu-terminal diff-hl docker
-			   dockerfile-mode doom-modeline doom-themes
-			   ef-themes ein el-get elscreen
-			   embark-consult exec-path-from-shell
-			   flycheck highlight-indent-guides isend-mode
-			   kind-icon leaf-convert leaf-tree lsp-java
-			   lsp-pyright lsp-tailwindcss lsp-ui magit
-			   marginalia multi-term multi-vterm mwim
-			   nerd-icons nodejs-repl orderless poetry
-			   projectile rainbow-delimiters ruff-format
-			   rustic skewer-mode slime-company swiper
-			   treesit-auto uv-mode vertico yasnippet))
+   '(add-node-modules-path apheleia cape consult corfu-terminal diff-hl
+			   docker dockerfile-mode doom-modeline
+			   doom-themes ein exec-path-from-shell
+			   kind-icon lsp-pyright lsp-tailwindcss
+			   lsp-ui magit marginalia multi-vterm mwim
+			   no-littering orderless projectile pyvenv
+			   rainbow-delimiters ruff-format treesit-auto
+			   uv-mode vertico))
+ '(package-vc-selected-packages
+   '((lsp-tailwindcss :vc-backend Git :url
+		      "https://github.com/merrickluo/lsp-tailwindcss")))
  '(which-key-idle-delay 0.5 nil nil "Customized with use-package which-key")
  '(which-key-idle-secondary-delay 0.05 nil nil "Customized with use-package which-key"))
 (custom-set-faces
