@@ -474,7 +474,9 @@
                 `(lambda () (interactive) (tab-bar-select-tab ,(+ i 1))))))
 
 ;; terminal emulation
-(use-package vterm)
+(use-package vterm
+  :bind (:map vterm-mode-map
+	      ("C-c ESC" . vterm-send-escape)))
 (use-package multi-vterm)
 
 (provide 'init)
@@ -485,12 +487,13 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(add-node-modules-path apheleia cape consult corfu-terminal diff-hl
-			   docker dockerfile-mode doom-modeline
-			   doom-themes ein exec-path-from-shell
-			   kind-icon lsp-pyright lsp-tailwindcss
-			   lsp-ui magit marginalia multi-vterm mwim
-			   no-littering orderless projectile pyvenv
+   '(add-node-modules-path agent-shell apheleia cape consult
+			   corfu-terminal diff-hl docker
+			   dockerfile-mode doom-modeline doom-themes
+			   ein exec-path-from-shell kind-icon
+			   lsp-pyright lsp-tailwindcss lsp-ui magit
+			   marginalia multi-vterm mwim no-littering
+			   orderless projectile pyvenv
 			   rainbow-delimiters ruff-format treesit-auto
 			   uv-mode vertico))
  '(package-vc-selected-packages
