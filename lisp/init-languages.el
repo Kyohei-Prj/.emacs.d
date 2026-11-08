@@ -27,7 +27,7 @@
    '((tsx-ts-mode typescript-ts-mode js-ts-mode)
 	   . ("rass"
 		    "--"
-		    "typescript-language-server" "--stdio"
+		    "tsc" "--lsp" "--stdio"
 		    "--"
 		    "tailwindcss-language-server" "--stdio"))))
 

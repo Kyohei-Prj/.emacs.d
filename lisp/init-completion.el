@@ -24,13 +24,14 @@
 ;; Corfu: in-buffer completion.
 (use-package corfu
   :init
+  (require 'corfu-auto)
   (global-corfu-mode 1)
   :custom
   (corfu-auto t)
   (corfu-auto-delay 0.2)
-  (corfu-auto-prefix 2)
+  (corfu-auto-prefix 1)
   (corfu-cycle t)
-  (corfu-preselect 'prompt)
+  (corfu-preselect 'first)
   (corfu-preview-current nil)
   (corfu-popupinfo-delay '(0.5 . 0.2))
   :config
