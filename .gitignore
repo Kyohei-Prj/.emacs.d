@@ -1,14 +1,51 @@
+# -*- mode: gitignore; -*-
+
+# Byte-compiled / native-compiled output
+*.elc
+*.eln
+/eln-cache/
+
+# Installed packages and downloaded tooling
 /elpa/
-/auto-save-list/
+/straight/
+/quelpa/
 /request/
-/init.elc
-/.lsp-session-v1
-/init.el~
 /elpy/
-/transient/
-/recentf
-/.cache/
-/.dap-breakpoints
+/.python-environments/
 /eclipse.jdt.ls/
-/recentf~
+/transient/
+/.cache/
 /workspace/
+/var/
+/url/
+
+# Tree-sitter grammar binaries (built locally with treesit-install-language-grammar)
+/tree-sitter/
+
+# Backups, auto-saves, lock files
+/backups/
+/auto-save-list/
+*~
+\#*\#
+.\#*
+
+# Session state / machine-specific files
+/recentf
+/recentf.eld
+/places.eld
+/projects.eld
+/history
+/bookmarks
+/abbrev_defs
+/network-security.data
+/ac-comphist.dat
+/tramp
+/.lsp-session-v1
+/.dap-breakpoints
+/.last-package-update-day
+
+# Machine-specific Custom settings (unignore to track customized options)
+/custom.el
+
+# Third-party tool state
+/.serena/
