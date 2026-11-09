@@ -3,13 +3,12 @@
 ;; Dark theme.
 (require 'modus-themes)
 
+;; `modus-themes-prompts' and `modus-themes-completions' were removed in
+;; Modus Themes 5.3: prompts and completion matches are now bold as a
+;; consequence of `modus-themes-bold-constructs'.
 (setq modus-themes-italic-constructs t
       modus-themes-bold-constructs t
       modus-themes-mixed-fonts nil
-      modus-themes-prompts '(bold)
-      modus-themes-completions
-      '((matches . (extrabold))
-        (selection . (semibold italic)))
       modus-themes-org-blocks 'tinted-background)
 
 (load-theme 'modus-vivendi t)

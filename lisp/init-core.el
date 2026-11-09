@@ -53,14 +53,11 @@
     (setenv "PATH"
             (concat directory path-separator (getenv "PATH")))))
 
-(dolist (directory
-         '("~/.bun/bin"
-           "~/.local/bin"
-           "~/.cargo/bin"
-           "/usr/local/bin"))
-  (my/add-to-path (expand-file-name directory))
-
-  )
+(dolist (directory '("~/.bun/bin"
+                     "~/.local/bin"
+                     "~/.cargo/bin"
+                     "/usr/local/bin"))
+  (my/add-to-path (expand-file-name directory)))
 
 ;; Use short answers.
 (setq use-short-answers t)

@@ -6,7 +6,6 @@
   :init (tab-bar-mode 1)
   :config (setq tab-bar-show 1
                 tab-bar-close-button-show nil
-                tab-bar-new-button-show nil
                 tab-bar-format '(tab-bar-format-tabs tab-bar-separator))
   ;; Custom Tab Name Formatting (0-indexed)
   (setq tab-bar-tab-name-format-function

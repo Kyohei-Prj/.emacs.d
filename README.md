@@ -160,7 +160,9 @@ What each package provides:
 | `sql-language-server` | `sql-language-server` | SQL |
 | `prettier` | `prettier` | project formatter on the CLI (run via `M-x compile` / `M-x async-shell-command`); `eglot-format` is used inside Emacs |
 
-> `tsc --lsp` requires the **native TypeScript 7+** compiler. On older TypeScript (5.x/6.x) use `typescript-language-server --stdio` instead, i.e. edit the `eglot-server-programs` entry in `lisp/init-languages.el`.
+> `tsc --lsp` needs the **native TypeScript 7+** compiler. `lisp/init-languages.el` probes `tsc --version` and silently falls back to `typescript-language-server --stdio` on TypeScript 5/6 — install both and nothing else is required.
+
+`my/rass-command` (in `lisp/init-languages.el`) also drops any server whose binary is missing: with no `tailwindcss-language-server` you get plain `tsc --lsp`, and with no `rass` you get the first available server instead of a startup error.
 
 Project-local servers are also picked up: keep `node_modules/.bin` in your project and `eglot`/`rass` will resolve local binaries.
 
@@ -176,14 +178,16 @@ uv tool install ruff              # provides `ruff server` + formatter
 uv tool install rassumfrassum     # provides `rass`, the LSP multiplexer
 ```
 
-- `uv-mode` is a global minor mode that puts the active uv virtualenv in the modeline and adds `.venv/bin` to `exec-path`/`PATH` (`C-c C-s` `uv-mode-set`, `C-c C-u` `uv-mode-unset`, or `M-x uv-mode`).
-  See the note in §12 about `python-ts-mode` and auto-activation.
+- `uv-mode` is a global minor mode that puts the active uv virtualenv in the modeline and puts `.venv/bin` on `exec-path`/`PATH` (`C-c C-s` `uv-mode-set`, `C-c C-u` `uv-mode-unset`, or `M-x uv-mode`).
+  `lisp/init-languages.el` enables it automatically for `python-mode` **and** `python-ts-mode` buffers whenever a `.venv` exists at or above the visited file — see `my/uv-mode-activate` in §8.
 - `ruff-format-on-save-mode` formats Python buffers on save.
 - Python LSP runs as **one** Eglot connection multiplexed by `rass`:
 
   ```
   rass -- basedpyright-langserver --stdio -- ruff server
   ```
+
+  Without `rass`, Eglot just starts `basedpyright-langserver` (the missing binary is detected at connect time).
 
 ### 4.3 System packages
 
@@ -245,10 +249,10 @@ M-x vterm                    # native terminal (compiles the module on first use
 M-: (treesit-language-available-p 'tsx)   ;; => t once the grammar is built
 ```
 
-To read the LSP handshake log, note that `init-lsp.el` sets `eglot-events-buffer-size` to `0`:
+To read the LSP handshake log, note that `init-lsp.el` disables it via `eglot-events-buffer-config`:
 
 ```
-M-: (setq eglot-events-buffer-size 100000) RET
+M-: (setq eglot-events-buffer-config '(:size 200000 :format full)) RET
 M-x eglot-reconnect RET
 M-x eglot-events-buffer RET
 ```
@@ -290,8 +294,11 @@ Branches: `master` is the stable branch, `develop` is where work happens.
 - **init-core.el** — 2-space indent, 88-column `fill-column`, no backups in-place (they go to `~/.emacs.d/backups/`), no lockfiles, `delete-selection-mode`, `electric-pair-mode`, `show-paren-mode`, `global-auto-revert-mode`, `save-place-mode`, `recentf-mode`, `winner-mode`, `use-short-answers`, and the `PATH` additions described in §4.
 - **init-ui.el** — loads `modus-vivendi`, trimmed modeline (buffer / position / modes), line numbers in `prog-mode`, no blinking cursor or visible bell, `which-key` after 0.5 s.
 - **init-completion.el** — Vertico in the minibuffer, Orderless matching (`partial-completion` for files), Marginalia annotations, global Corfu with 0.2 s auto-trigger after 1 char plus documentation popups, Cape sources (`cape-file`, `cape-dabbrev`, `cape-keyword`), Embark for context actions.
-- **init-lsp.el** — `eglot-ensure` on every `prog-mode`, async connect (`eglot-sync-connect nil`), auto-shutdown, extend to cross-references, Flymake diagnostics every 0.5 s, one-line Eldoc.
-- **init-languages.el** — server table for Python, TS/TSX/JS, SQL, Markdown, Dockerfile, Bash, HTML, CSS, JSON, YAML; `markdown-mode` (`.md`/`.mdx`, `pandoc` backend, native code-block fontification); `dockerfile-mode`; `json-ts-mode` for `.json`.
+- **init-lsp.el** — `eglot-ensure` on every `prog-mode`, async connect (`eglot-sync-connect nil`), auto-shutdown, extend to cross-references, LSP traffic logging off (`eglot-events-buffer-config '(:size 0 :format full)`), Flymake diagnostics every 0.5 s, one-line Eldoc.
+- **init-languages.el** — server table for Python, TS/TSX/JS, SQL, Markdown, Dockerfile, Bash, HTML, CSS, JSON, YAML; `markdown-mode` (`.md`/`.mdx`, `pandoc` backend, native code-block fontification); `dockerfile-mode`; `json-ts-mode` for `.json`. Two helpers keep the server list resilient:
+  - `my/rass-command` — filters SERVERS down to what is on `exec-path`, wraps several survivors in `rass`, returns a lone survivor directly, and returns the first entry when nothing is installed so Eglot's normal "program not found" error is shown.
+  - `my/tsc-supports-lsp-p` — returns non-nil only for `tsc` ≥ 7, which is what selects `tsc --lsp` over `typescript-language-server`.
+  - `my/uv-mode-activate` — Python hook that turns on `uv-mode` and activates `.venv` in both `python-mode` and `python-ts-mode` (upstream `uv-mode-auto-activate-hook` only checks `python-mode`).
 - **init-terminal.el** — `tab-bar-mode` with 0-indexed numeric tab labels and a `C-z` prefix; `vterm` with `C-c ESC` forwarding a literal Escape to the shell.
 
 ---
@@ -379,9 +386,11 @@ Installed automatically on first launch (`:ensure t` plus `package-selected-pack
 - **Languages**: `markdown-mode`, `dockerfile-mode`, `uv-mode`, `ruff-format` (pulls `reformatter`, `pythonic`)
 - **Git / terminal**: `magit`, `vterm`
 
-Transitive dependencies (`dash`, `s`, `f`, `cond-let`, `with-editor`, `magit-section`, `inheritenv`, `reformatter`, `pythonic`, `ivy`) are pulled in automatically.
+Transitive dependencies (`dash`, `s`, `f`, `cond-let`, `with-editor`, `magit-section`, `inheritenv`, `reformatter`, `pythonic`, `llama`, `ivy`) are pulled in automatically.
 
-Installed but currently **not referenced** by any module (leftovers you can safely `M-x package-delete`): `eat`, `multi-vterm`. `ivy`/`swiper` are a matched pair — `swiper` is used for in-buffer search, `ivy` is its dependency.
+`which-key` and `editorconfig` are used by the config but are **built into Emacs 31**, so they never appear in `elpa/`.
+
+`ivy`/`swiper` are a matched pair: `swiper` powers `C-s`/`C-r`, `ivy` is its dependency. (`eat` and `multi-vterm` were removed from `package-selected-packages` and from `elpa/`; `vterm` alone is used.)
 
 ---
 
@@ -389,7 +398,7 @@ Installed but currently **not referenced** by any module (leftovers you can safe
 
 - Start with a native-compilable Emacs; `eln-cache/` fills up after the first few launches and startup keeps improving.
 - `gc-cons-threshold` is 100 MB during init, 32 MB afterwards. Raise it further (e.g. 128 MB) if you work on very large buffers.
-- `eglot-events-buffer-size` is 0 (no log buffer churn) and `eglot-sync-connect` is nil (never blocks startup).
+- `eglot-events-buffer-config` is `'(:size 0 :format full)` (no log buffer churn) and `eglot-sync-connect` is nil (never blocks startup).
 - Tree-sitter grammars are compiled once and cached; `*-ts-mode` buffers are cheaper than `treesit`-less modes.
 - `modus-themes` is high-contrast but cheap: no runtime color computation, no fringe/box decorations.
 - Everything is split into `lisp/init-*.el` modules, so a slow section can be commented out in `init.el` to bisect startup cost — profile with `M-x profile-start` / `profile-report`.
@@ -402,14 +411,15 @@ Installed but currently **not referenced** by any module (leftovers you can safe
 | --- | --- |
 | `Cannot open load file: No such file or directory, use-package` | Emacs < 30 — upgrade, or bootstrap it at the top of `init.el`: `(require 'package) (package-refresh-contents) (package-install 'use-package)`. |
 | `tsx-ts-mode is not defined` / no TS highlighting | Grammar not built — §5. |
-| `Failed to start LSP server` with `rass` in the message | `uv tool install rassumfrassum`, or replace the `rass ...` wrapper in `lisp/init-languages.el` with the single server you want. |
+| `Failed to start LSP server` with `rass` in the message | `uv tool install rassumfrassum`. If you don't want aggregation at all, remove the `my/rass-command` wrapper in `lisp/init-languages.el` and give Eglot the single server you want. |
 | No completion in a Python buffer | `M-x eglot-reconnect`; check `M-x eglot-events-buffer` and that `basedpyright-langserver`/`ruff` are on `PATH`. |
 | `vterm` prompts to compile and then fails | Install `cmake`, a C/C++ compiler, and `libvterm` headers (§4.3). |
 | `consult-ripgrep` fails with `Searching for program: No such file or directory` | Install `ripgrep`. |
 | Markdown export does nothing | Install `pandoc`, or set `markdown-command` to something available. |
 | Fonts/icons look wrong in the terminal | This config uses no icon fonts on purpose; pick a Nerd Font only if you add icon packages. |
 | Emacs is slow on first run after `git pull` | Native recompilation in progress; check the `*Native-Compilation Errors*` / `*Warnings*` buffers and let the queue drain. |
-| `uv` venv not activated in `.py` files | `uv-mode-auto-activate-hook` only fires for buffers deriving from `python-mode`, but `.py` opens `python-ts-mode`. Run `M-x uv-mode-set` manually (or change `auto-mode-alist` in `lisp/init-treesit.el` to use `python-mode`). |
+| `uv` venv not activated in a Python buffer | `my/uv-mode-activate` needs `uv` on `PATH` **and** a `.venv` directory at or above the file. Otherwise force it with `M-x uv-mode-set` (`M-x uv-mode-unset` to undo). |
+| LSP connects to only one of several servers | A server binary was missing from `exec-path`, so `my/rass-command` degraded to a single server. Install it and `M-x eglot-reconnect`. |
 
 ---
 

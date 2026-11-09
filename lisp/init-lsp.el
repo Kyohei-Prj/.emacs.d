@@ -20,7 +20,11 @@
 (define-key my/lsp-map (kbd "R") #'eglot-reconnect)
 
 (setq eglot-autoshutdown t
-      eglot-events-buffer-size 0
+      ;; Don't keep a log of LSP traffic (saves memory on chatty servers).
+      ;; To debug a server: M-: (setq eglot-events-buffer-config
+      ;;                             '(:size 200000 :format full))
+      ;;              M-x eglot-reconnect, then M-x eglot-events-buffer.
+      eglot-events-buffer-config '(:size 0 :format full)
       eglot-sync-connect nil
       eglot-extend-to-xref t)
 
