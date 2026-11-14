@@ -26,9 +26,14 @@
 
 ;; terminal emulation
 (use-package vterm
+  :custom
+  ;; vterm forwards every key to the shell unless listed here, so `C-z' has
+  ;; to be an exception or the tab prefix below would send SIGTSTP instead.
+  ;; Keep the upstream defaults in sync (C-h v vterm-keymap-exceptions).
+  (vterm-keymap-exceptions
+   '("C-c" "C-x" "C-u" "C-g" "C-h" "C-l" "M-x" "M-o" "C-y" "M-y" "C-z"))
   :bind (:map vterm-mode-map
-	      ("C-c ESC" . vterm-send-escape)))
-
+              ("C-c ESC" . vterm-send-escape)))
 
 (provide 'init-terminal)
 ;;; init-terminal.el ends here

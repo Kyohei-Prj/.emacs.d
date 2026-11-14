@@ -5,6 +5,13 @@
 (setq frame-inhibit-implied-resize t
       inhibit-startup-screen t
       inhibit-startup-message t)
+
+;; Ask for chrome-free frames from the very first one: `tool-bar-mode' and
+;; `menu-bar-mode' can only hide the chrome after the frame exists, which
+;; causes a visible flash at startup.
+(push '(tool-bar-lines . 0) default-frame-alist)
+(push '(menu-bar-lines . 0) default-frame-alist)
+
 (tool-bar-mode -1)
 (menu-bar-mode -1)
 

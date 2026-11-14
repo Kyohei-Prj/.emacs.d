@@ -24,6 +24,7 @@
 
 # Backups, auto-saves, lock files
 /backups/
+/auto-save/
 /auto-save-list/
 *~
 \#*\#

@@ -1,8 +1,7 @@
 ;;; init.el --- Main configuration -*- lexical-binding: t; -*-
 
-(setq user-emacs-directory
-      (expand-file-name "~/.emacs.d/"))
-
+;; `user-emacs-directory' is set by Emacs itself (and honours
+;; --init-directory), so only `load-path' needs extending here.
 (add-to-list 'load-path
              (expand-file-name "lisp" user-emacs-directory))
 
@@ -21,17 +20,18 @@
 
 (package-initialize)
 
-;; use-package ships with Emacs 31.1.
+;; use-package has been built into Emacs since 29.1.
 (require 'use-package)
 (setq use-package-always-ensure t)
 
+;; modus-themes is not built in and `init-ui.el' requires it directly rather
+;; than through use-package, so make sure it exists before the modules load.
 (unless (package-installed-p 'modus-themes)
   (package-refresh-contents)
   (package-install 'modus-themes))
 
 ;; Custom settings.
-(setq custom-file
-      (expand-file-name "custom.el" user-emacs-directory))
+(setq custom-file (locate-user-emacs-file "custom.el"))
 
 (load custom-file 'noerror 'nomessage)
 

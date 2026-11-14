@@ -44,7 +44,9 @@ Works on **Linux and macOS**, both in GUI and in the terminal.
 | Theme | `modus-vivendi` (accessible, high contrast) |
 
 Deliberately avoided: Helm, Ivy, `lsp-mode`, `doom-emacs`, `spacemacs`, `company-mode`.
-(`ivy` is present only as an install-time dependency of `swiper`.)
+Buffer search is the built-in incremental isearch; `swiper` was dropped (it pulls
+`ivy` in and does not use Vertico, Orderless or Embark) in favour of Consult's
+`consult-line` / `consult-ripgrep`.
 
 ---
 
@@ -54,7 +56,10 @@ Deliberately avoided: Helm, Ivy, `lsp-mode`, `doom-emacs`, `spacemacs`, `company
 
 - **Emacs 30 minimum, Emacs 31.1 recommended** (this config is developed and tested on 31.1).
   - Consult, Vertico, Corfu and friends require ≥ 29.1.
-  - `init.el` does `(require 'use-package)` without bootstrapping it, so `use-package` must be built in — that means ≥ 30.
+  - `init.el` does `(require 'use-package)` without bootstrapping it, and `use-package`
+    has been built into Emacs since 29.1.
+  - Emacs 31 renders Corfu's popups in the terminal too (TTY child frames,
+    `(featurep 'tty-child-frames)`); on Emacs 30 you would need `corfu-terminal`.
 - Built with **Tree-sitter** (`--with-tree-sitter`) — check with:
 
   ```elisp
@@ -72,7 +77,8 @@ emacs --version
 
 - `git` (Magit, plus grammar installation)
 - A C compiler and `make` (`gcc`/`clang`, `build-essential` on Debian/Ubuntu, `base-devel` on Arch) — needed for `vterm`'s native module and for compiling Tree-sitter grammars
-- `zsh` — `init-core.el` sets `shell-file-name`/`explicit-shell-file-name` to `/bin/zsh`
+- `zsh` (optional) — `init-core.el` resolves it with `(executable-find "zsh")` and uses it
+  for shell commands when installed; if it is missing, Emacs' default shell is kept
 
 ---
 
@@ -85,7 +91,7 @@ mv ~/.emacs.d ~/.emacs.d.bak   # optional
 git clone https://github.com/Kyohei-Prj/.emacs.d.git ~/.emacs.d
 ```
 
-Start Emacs once. Package archives are preconfigured (GNU ELPA → NonGNU ELPA → MELPA, in that priority order) and every `use-package` form uses `:ensure t`, so packages are downloaded and installed automatically on first launch.
+Start Emacs once. Package archives are preconfigured (GNU ELPA → NonGNU ELPA → MELPA, in that priority order) and `use-package-always-ensure` is enabled, so packages are downloaded and installed automatically on first launch; built-in packages (`project`, `tab-bar`, `eglot`) opt out with `:ensure nil`.
 
 ```bash
 emacs        # GUI
@@ -104,12 +110,17 @@ Notes:
 
 The Elisp side installs *no* external binaries. Every language server, formatter, and CLI helper below must be on your `PATH`.
 
-`lisp/init-core.el` adds these directories to `exec-path` and `$PATH` at startup, so install tools into one of them:
+`lisp/init-core.el` extends `exec-path` and `$PATH` at startup — only directories that
+exist are added, and existing duplicates are removed so neither a restart nor an
+inherited shell `PATH` can grow it. Directories are prepended in reverse, so the
+effective search order puts your own tools ahead of system ones (a stale
+`/usr/local/bin` copy can no longer shadow a `uv tool install` build):
 
-1. `~/.bun/bin`
+1. `~/.bun/bin`  ← highest priority
 2. `~/.local/bin`  ← `uv tool install` lands here
 3. `~/.cargo/bin`
-4. `/usr/local/bin`
+4. `/opt/homebrew/bin`  ← macOS Homebrew (GUI Emacs does not inherit your shell `PATH`)
+5. `/usr/local/bin`  ← lowest priority
 
 ### 4.1 Node.js / TypeScript tooling
 
@@ -212,6 +223,10 @@ Interactively:
 M-x treesit-install-language-grammar RET tsx RET
 ```
 
+On Emacs 31 you usually do not have to: `treesit-auto-install-grammar` defaults to `ask`,
+so the first time you open a file whose grammar is missing Emacs offers to fetch and
+build it (`never` silences the prompt, `always` builds without asking).
+
 Or all of them in one shot from a shell:
 
 ```bash
@@ -229,7 +244,12 @@ emacs -Q --batch \
 Configured languages (`lisp/init-treesit.el`): `bash`, `css`, `html`, `javascript`, `json`, `python`, `typescript`, `tsx`, `yaml`.
 `typescript`/`tsx` are pinned to the `master` branch of `tree-sitter-typescript`, with the grammar in the `typescript/src` and `tsx/src` subdirectories.
 
-Mode mapping is automatic: `.ts → typescript-ts-mode`, `.tsx → tsx-ts-mode`, `.js/.jsx/.mjs/.cjs → js-ts-mode`, `.py → python-ts-mode`, `.json → json-ts-mode`, `.ya?ml → yaml-ts-mode`, `.sh → bash-ts-mode`, `.zsh → sh-mode`.
+Mode mapping is explicit (`auto-mode-alist`) rather than through Emacs 31's
+`treesit-enabled-modes`, so it also works on Emacs 30, covers only the languages
+configured here, and keeps `.zsh` on `sh-mode` — enabling every ts-mode would remap
+shell files to `bash-ts-mode`.
+
+The mapping in effect: `.ts → typescript-ts-mode`, `.tsx → tsx-ts-mode`, `.js/.jsx/.mjs/.cjs → js-ts-mode`, `.py → python-ts-mode`, `.json → json-ts-mode`, `.ya?ml → yaml-ts-mode`, `.sh → bash-ts-mode`, `.zsh → sh-mode`.
 Indent defaults: Python 4, JS/TS 2, CSS 2.
 
 ---
@@ -259,6 +279,11 @@ M-x eglot-events-buffer RET
 
 If `M-x eglot` reports `Searching for program: No such file or directory`, the server binary is missing from `PATH` or not on `exec-path` (see §4).
 
+Emacs 31 already ships defaults for several servers (`docker-langserver`,
+`bash-language-server`, `yaml-language-server`, and the Markdown/HTML/CSS/JSON
+candidates), so `init-languages.el` lists only servers with no default or ones it pins
+to a single program deliberately; compare with `C-h v eglot-server-programs`.
+
 ---
 
 ## 7. Repository Layout
@@ -269,12 +294,12 @@ If `M-x eglot` reports `Searching for program: No such file or directory`, the s
 ├── init.el                # archives, package-init, theme, custom.el, module loader
 ├── custom.el              # machine-specific, gitignored
 ├── lisp/
-│   ├── init-core.el        # defaults, backups, PATH (bun/uv/cargo/local), zsh
+│   ├── init-core.el        # defaults, backups/auto-saves, savehist, PATH, zsh
 │   ├── init-ui.el          # Modus Vivendi, modeline, line numbers, which-key
 │   ├── init-completion.el  # Vertico, Orderless, Marginalia, Corfu, Cape, Embark
-│   ├── init-navigation.el  # Consult, project.el, mwim, swiper, windmove
+│   ├── init-navigation.el  # Consult, project.el, mwim, windmove
 │   ├── init-treesit.el     # grammar sources + ts-mode remaps + indentation
-│   ├── init-lsp.el         # eglot auto-start, C-c l map, Flymake diagnostics
+│   ├── init-lsp.el         # eglot auto-start, C-c l map (managed buffers), Flymake
 │   ├── init-languages.el   # per-language servers, uv/ruff, markdown, dockerfile
 │   ├── init-git.el         # Magit
 │   ├── init-terminal.el    # tab-bar (C-z) + vterm
@@ -291,15 +316,44 @@ Branches: `master` is the stable branch, `develop` is where work happens.
 ## 8. Module Tour
 
 - **early-init.el** — disables `package-enable-at-startup` (init.el owns package loading), hides menu/tool bars, prevents frame resizing, and raises `gc-cons-threshold` to 100 MB during startup.
-- **init-core.el** — 2-space indent, 88-column `fill-column`, no backups in-place (they go to `~/.emacs.d/backups/`), no lockfiles, `delete-selection-mode`, `electric-pair-mode`, `show-paren-mode`, `global-auto-revert-mode`, `save-place-mode`, `recentf-mode`, `winner-mode`, `use-short-answers`, and the `PATH` additions described in §4.
-- **init-ui.el** — loads `modus-vivendi`, trimmed modeline (buffer / position / modes), line numbers in `prog-mode`, no blinking cursor or visible bell, `which-key` after 0.5 s.
-- **init-completion.el** — Vertico in the minibuffer, Orderless matching (`partial-completion` for files), Marginalia annotations, global Corfu with 0.2 s auto-trigger after 1 char plus documentation popups, Cape sources (`cape-file`, `cape-dabbrev`, `cape-keyword`), Embark for context actions.
-- **init-lsp.el** — `eglot-ensure` on every `prog-mode`, async connect (`eglot-sync-connect nil`), auto-shutdown, extend to cross-references, LSP traffic logging off (`eglot-events-buffer-config '(:size 0 :format full)`), Flymake diagnostics every 0.5 s, one-line Eldoc.
+- **init-core.el** — 2-space indent, 88-column `fill-column`, no lockfiles, numbered
+  backups in `~/.emacs.d/backups/` and auto-saves (`#file#`) in `~/.emacs.d/auto-save/`
+  instead of next to your files, trailing whitespace highlighted in `prog-mode`,
+  `delete-selection-mode`, `electric-pair-mode`, `show-paren-mode`,
+  `global-auto-revert-mode`, `save-place-mode`, `recentf-mode`, `winner-mode`,
+  `savehist-mode` (keeps the minibuffer/Vertico history across sessions),
+  `use-short-answers`, `tab-always-indent 'complete`, and the `PATH` additions described in §4.
+- **init-ui.el** — loads `modus-vivendi`, trimmed modeline set with `setq-default`
+  (modification marker / buffer / position / VC branch / modes / `mode-line-misc-info`,
+  which is where Eglot shows its status), line numbers in `prog-mode`, blinking cursor
+  switched off with `(blink-cursor-mode -1)`, no visible bell, no hollow cursor in
+  inactive windows, `which-key` after 0.5 s.
+- **init-completion.el** — Vertico in the minibuffer, Orderless matching
+  (`partial-completion` for files), Marginalia annotations, global Corfu with 0.2 s
+  auto-trigger after 1 char plus documentation popups and `M-i` for
+  `completion-at-point`, Cape sources registered with `add-hook` in precedence order
+  (`cape-file` → `cape-keyword` → `cape-dabbrev`; the first Capf that returns a result
+  wins, and buffer-local sources such as Eglot's always take precedence), Embark for
+  context actions.
+- **init-lsp.el** — `eglot-ensure` on every `prog-mode`, async connect
+  (`eglot-sync-connect nil`), auto-shutdown, extend to cross-references, LSP traffic
+  logging off (`eglot-events-buffer-config '(:size 0 :format full)`), Flymake
+  diagnostics every 0.5 s with `M-n`/`M-p` bound to next/previous error, one-line Eldoc.
+  The `C-c l` prefix lives in `eglot-mode-map`, so it exists only in buffers with a
+  running server (and leaves `C-c l` free for `outline-minor-mode`). Eglot enables
+  Flymake itself, so nothing re-enables it here.
 - **init-languages.el** — server table for Python, TS/TSX/JS, SQL, Markdown, Dockerfile, Bash, HTML, CSS, JSON, YAML; `markdown-mode` (`.md`/`.mdx`, `pandoc` backend, native code-block fontification); `dockerfile-mode`; `json-ts-mode` for `.json`. Two helpers keep the server list resilient:
   - `my/rass-command` — filters SERVERS down to what is on `exec-path`, wraps several survivors in `rass`, returns a lone survivor directly, and returns the first entry when nothing is installed so Eglot's normal "program not found" error is shown.
   - `my/tsc-supports-lsp-p` — returns non-nil only for `tsc` ≥ 7, which is what selects `tsc --lsp` over `typescript-language-server`.
   - `my/uv-mode-activate` — Python hook that turns on `uv-mode` and activates `.venv` in both `python-mode` and `python-ts-mode` (upstream `uv-mode-auto-activate-hook` only checks `python-mode`).
-- **init-terminal.el** — `tab-bar-mode` with 0-indexed numeric tab labels and a `C-z` prefix; `vterm` with `C-c ESC` forwarding a literal Escape to the shell.
+- **init-navigation.el** — Consult bindings (`consult-buffer`, `consult-line`,
+  `consult-ripgrep`, `consult-history`, `consult-imenu`, `consult-flymake`,
+  `consult-goto-line` via remaps), `consult-xref` for xref/definition popups,
+  `project.el` on `C-c p` with `g` switched to `consult-ripgrep`, `mwim` on `C-a`/`C-e`,
+  `windmove` on Shift+arrows. Buffer search stays on the built-in isearch.
+- **init-terminal.el** — `tab-bar-mode` with 0-indexed numeric tab labels and a `C-z`
+  prefix; `vterm` with `C-c ESC` forwarding a literal Escape to the shell and `C-z`
+  listed in `vterm-keymap-exceptions` so the tab prefix is not sent to the shell.
 
 ---
 
@@ -309,12 +363,13 @@ Branches: `master` is the stable branch, `develop` is where work happens.
 
 | Key | Action |
 | --- | --- |
-| `C-s` / `C-r` | `swiper` / `swiper-backward` (isearch-style buffer search) |
+| `C-s` / `C-r` | `isearch-forward` / `isearch-backward` (built-in incremental buffer search) |
 | `C-x b` | `consult-buffer` (buffers, files, projects, bookmarks) |
 | `C-x C-r` | `consult-recent-file` |
 | `M-y` | `consult-yank-pop` (kill-ring browser) |
 | `M-s l` / `M-s L` | `consult-line` / `consult-line-multi` |
 | `M-s g` | `consult-ripgrep` (project grep) |
+| `M-g g` / `M-g i` / `M-g f` | `consult-goto-line` / `consult-imenu` / `consult-flymake` |
 | `C-c h` / `C-c m` / `C-c k` | history / set marker / global markers |
 | `C-a` / `C-e` | `mwim-beginning-of-code-or-line` / `mwim-end-of-code-or-line` |
 | `S-<arrow>` | `windmove` window switching |
@@ -335,7 +390,7 @@ Branches: `master` is the stable branch, `develop` is where work happens.
 | `C-.` / `C-;` | `embark-act` / `embark-dwim` |
 | `C-h B` | `embark-bindings` (searchable keymap help) |
 
-### LSP (prefix `C-c l`)
+### LSP (prefix `C-c l`, available in Eglot-managed buffers)
 
 | Key | Action |
 | --- | --- |
@@ -345,7 +400,8 @@ Branches: `master` is the stable branch, `develop` is where work happens.
 | `C-c l h` | Eldoc / signature help |
 | `C-c l d` / `C-c l D` | definitions / references |
 | `C-c l q` / `C-c l R` | shutdown / reconnect server |
-| `M-g n` / `M-g p` | next / previous Flymake diagnostic (built-in) |
+| `M-n` / `M-p` (in `flymake-mode`) | next / previous Flymake diagnostic |
+| `M-g n` / `M-g p` | next / previous diagnostic through `next-error` (built-in) |
 | `C-c C-s` / `C-c C-u` | `uv-mode-set` / `uv-mode-unset` (while `uv-mode` is on) |
 
 ### Git
@@ -366,6 +422,10 @@ Branches: `master` is the stable branch, `develop` is where work happens.
 | `M-x vterm` | new terminal (tab-bar keeps it in place) |
 | `C-c ESC` | send a literal Escape to the shell (in `vterm-mode`) |
 
+`C-z` is listed in `vterm-keymap-exceptions`, so `C-z c` inside a `vterm` buffer creates a
+tab instead of sending SIGTSTP to the shell. Remove a key from that list to hand it back
+to the shell.
+
 ### Editing
 
 | Key | Action |
@@ -374,11 +434,28 @@ Branches: `master` is the stable branch, `develop` is where work happens.
 | `C->` / `C-<` | mark next / previous like this |
 | `C-c C-<` | mark all like this |
 
+### Terminal caveats
+
+Most of the config works in `emacs -nw`, but a plain TTY cannot report these modifier
+combinations, so the bindings are effectively GUI-only:
+
+| Key | Bound to | Terminal-friendly alternative |
+| --- | --- | --- |
+| `C-.` / `C-;` | `embark-act` / `embark-dwim` | `M-x embark-act`, or add e.g. `("C-c :" . embark-act)` |
+| `C->` / `C-<`, `C-S-c C-S-c`, `C-c C-<` | `multiple-cursors` | `M-x mc/mark-next-like-this`, or rebind under `C-c` |
+| `S-<arrow>` | `windmove` | `C-x o`; some terminals need xterm-style modifier support |
+
+Corfu's popup needs child frames, which Emacs 31 supports on TTY frames too
+(`(featurep 'tty-child-frames)`); on Emacs 30 install `corfu-terminal` if you want the
+popup in the terminal. `M-i` (`completion-at-point`) and everything in the minibuffer
+work in the terminal as is.
+
 ---
 
 ## 10. Installed Elpa Packages
 
-Installed automatically on first launch (`:ensure t` plus `package-selected-packages` in `custom.el`):
+Installed automatically on first launch (`use-package-always-ensure` plus
+`package-selected-packages` in `custom.el`):
 
 - **Completion**: `vertico`, `orderless`, `marginalia`, `corfu`, `cape`, `embark`, `embark-consult`, `consult`
 - **UI**: `modus-themes`, `which-key`, `rainbow-delimiters`
@@ -386,11 +463,13 @@ Installed automatically on first launch (`:ensure t` plus `package-selected-pack
 - **Languages**: `markdown-mode`, `dockerfile-mode`, `uv-mode`, `ruff-format` (pulls `reformatter`, `pythonic`)
 - **Git / terminal**: `magit`, `vterm`
 
-Transitive dependencies (`dash`, `s`, `f`, `cond-let`, `with-editor`, `magit-section`, `inheritenv`, `reformatter`, `pythonic`, `llama`, `ivy`) are pulled in automatically.
+Transitive dependencies (`dash`, `s`, `f`, `cond-let`, `with-editor`, `magit-section`, `inheritenv`, `reformatter`, `pythonic`, `llama`) are pulled in automatically.
 
 `which-key` and `editorconfig` are used by the config but are **built into Emacs 31**, so they never appear in `elpa/`.
 
-`ivy`/`swiper` are a matched pair: `swiper` powers `C-s`/`C-r`, `ivy` is its dependency. (`eat` and `multi-vterm` were removed from `package-selected-packages` and from `elpa/`; `vterm` alone is used.)
+`ivy`/`swiper` are gone (`vterm` alone provides the terminal; `eat`/`multi-vterm` were
+already dropped). They remain in `elpa/` on an existing checkout until
+`M-x package-autoremove` removes the orphans.
 
 ---
 
@@ -420,6 +499,8 @@ Transitive dependencies (`dash`, `s`, `f`, `cond-let`, `with-editor`, `magit-sec
 | Emacs is slow on first run after `git pull` | Native recompilation in progress; check the `*Native-Compilation Errors*` / `*Warnings*` buffers and let the queue drain. |
 | `uv` venv not activated in a Python buffer | `my/uv-mode-activate` needs `uv` on `PATH` **and** a `.venv` directory at or above the file. Otherwise force it with `M-x uv-mode-set` (`M-x uv-mode-unset` to undo). |
 | LSP connects to only one of several servers | A server binary was missing from `exec-path`, so `my/rass-command` degraded to a single server. Install it and `M-x eglot-reconnect`. |
+| `C-z c` in a `vterm` buffer suspends the shell instead of opening a tab | `C-z` must stay in `vterm-keymap-exceptions` (see §9) |
+| No dabbrev/file completion at point, only LSP | Cape sources must be on the **global** `completion-at-point-functions` — `add-hook`, not `add-to-list`, which writes the startup buffer's local value |
 
 ---
 

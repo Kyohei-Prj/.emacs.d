@@ -1,6 +1,8 @@
 ;;; init-languages.el --- Language configuration -*- lexical-binding: t; -*-
 
-(require 'eglot)
+;; `init-lsp.el' already loads Eglot (and init.el requires it first), so
+;; `eglot-server-programs' is available without another eager `require'.
+(eval-when-compile (require 'eglot))
 
 ;;; Multi-server aggregation.
 ;;
@@ -56,26 +58,34 @@ only loads `uv-mode' once one is found."
     (uv-mode-set)))
 
 (use-package uv-mode
-  :ensure t
   :functions (uv-mode-set)
   :hook ((python-mode . my/uv-mode-activate)
          (python-ts-mode . my/uv-mode-activate)))
 
 (use-package ruff-format
-  :ensure t
   :hook ((python-mode . ruff-format-on-save-mode)
          (python-ts-mode . ruff-format-on-save-mode)))
 
 ;;; JavaScript / TypeScript / TSX.
 
+(defvar my--tsc-lsp-support 'unprobed
+  "Memoized result of `my/tsc-supports-lsp-p'; `unprobed' means not yet run.
+Set back to `unprobed' to re-probe after installing or upgrading
+TypeScript without restarting Emacs.")
+
 (defun my/tsc-supports-lsp-p ()
   "Return non-nil if the `tsc' on `exec-path' understands `--lsp'.
-The native compiler shipped with TypeScript 7 added `--lsp`; older
-releases need `typescript-language-server' instead."
-  (when-let* ((tsc (executable-find "tsc"))
-              (banner (car (ignore-errors (process-lines tsc "--version")))))
-    (and (string-match "\\`Version \\([0-9]+\\)" banner)
-         (>= (string-to-number (match-string 1 banner)) 7))))
+The native compiler shipped with TypeScript 7 added `--lsp'; older
+releases need `typescript-language-server' instead.  The answer is
+cached in `my--tsc-lsp-support' because starting Node to print a
+version banner is slow and this runs on every server startup."
+  (when (eq my--tsc-lsp-support 'unprobed)
+    (setq my--tsc-lsp-support
+          (and-let* ((tsc (executable-find "tsc"))
+                     (banner (car (ignore-errors (process-lines tsc "--version")))))
+            (and (string-match "\\`Version \\([0-9]+\\)" banner)
+                 (>= (string-to-number (match-string 1 banner)) 7)))))
+  my--tsc-lsp-support)
 
 (add-to-list 'eglot-server-programs
              (cons '(tsx-ts-mode typescript-ts-mode js-ts-mode)
@@ -87,6 +97,11 @@ releases need `typescript-language-server' instead."
                             '("tailwindcss-language-server" "--stdio"))))))
 
 ;;; Other languages.
+;; Emacs 31 already ships defaults for Dockerfile (`docker-langserver'), Bash
+;; (`bash-language-server', `bash-ts-mode' included) and YAML, so those
+;; entries are not repeated here.  The ones kept either have no default at
+;; all (SQL, the JavaScript `*-ts-mode' family) or pin a single server
+;; instead of letting Eglot pick between several candidates.
 
 ;; SQL.
 (add-to-list 'eglot-server-programs
@@ -97,16 +112,6 @@ releases need `typescript-language-server' instead."
 (add-to-list 'eglot-server-programs
              '(markdown-mode
                . ("marksman" "server")))
-
-;; Dockerfile.
-(add-to-list 'eglot-server-programs
-             '(dockerfile-mode
-               . ("docker-langserver" "--stdio")))
-
-;; Bash.
-(add-to-list 'eglot-server-programs
-             '(bash-ts-mode
-               . ("bash-language-server" "start")))
 
 ;; HTML.
 (add-to-list 'eglot-server-programs
@@ -122,11 +127,6 @@ releases need `typescript-language-server' instead."
 (add-to-list 'eglot-server-programs
              '((json-mode json-ts-mode)
                . ("vscode-json-language-server" "--stdio")))
-
-;; YAML.
-(add-to-list 'eglot-server-programs
-             '((yaml-mode yaml-ts-mode)
-               . ("yaml-language-server" "--stdio")))
 
 ;; Start LSP in Markdown buffers.
 (add-hook 'markdown-mode-hook #'eglot-ensure)
@@ -154,9 +154,7 @@ releases need `typescript-language-server' instead."
   ("Dockerfile\\'" . dockerfile-mode)
   ("\\.dockerfile\\'" . dockerfile-mode))
 
-;; JSON.
-(add-to-list 'auto-mode-alist
-             '("\\.json\\'" . json-ts-mode))
+;; The `.json' to `json-ts-mode' mapping lives in init-treesit.el.
 
 ;; SQL.
 (add-to-list 'auto-mode-alist

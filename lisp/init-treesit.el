@@ -32,7 +32,11 @@
         (yaml
          "https://github.com/tree-sitter-grammars/tree-sitter-yaml")))
 
-;; Mode associations.
+;; Mode associations.  Emacs 31 can do this automatically with
+;; `treesit-enabled-modes' (t, or a list of ts-modes), but the explicit list
+;; is kept on purpose: it also works on Emacs 30, it selects only the
+;; languages configured here, and it keeps `.zsh' on `sh-mode' -- enabling
+;; every ts-mode would remap shell files to `bash-ts-mode'.
 (add-to-list 'auto-mode-alist
              '("\\.ts\\'" . typescript-ts-mode))
 
@@ -67,7 +71,8 @@
 (add-to-list 'auto-mode-alist
              '("\\.zsh\\'" . sh-mode))
 
-;; Indentation.
+;; Indentation.  `typescript-ts-indent-offset' is the Emacs 31 name; Emacs 30
+;; calls it `typescript-ts-mode-indent-offset' (an obsolete alias in 31).
 (setq-default python-indent-offset 4
               js-indent-level 2
               css-indent-offset 2

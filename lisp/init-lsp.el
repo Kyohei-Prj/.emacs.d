@@ -5,10 +5,13 @@
 ;; Start LSP automatically in programming buffers.
 (add-hook 'prog-mode-hook #'eglot-ensure)
 
-;; LSP keybindings.
+;; LSP keybindings.  Bound in `eglot-mode-map' (the keymap of
+;; `eglot-managed-mode') rather than globally: the commands are meaningless
+;; without a server, and keeping the prefix out of the global map leaves
+;; `C-c l' available for other packages and user bindings.
 (define-prefix-command 'my/lsp-map)
 
-(global-set-key (kbd "C-c l") 'my/lsp-map)
+(define-key eglot-mode-map (kbd "C-c l") my/lsp-map)
 
 (define-key my/lsp-map (kbd "r") #'eglot-rename)
 (define-key my/lsp-map (kbd "a") #'eglot-code-actions)
@@ -28,13 +31,14 @@
       eglot-sync-connect nil
       eglot-extend-to-xref t)
 
-;; Diagnostics.
+;; Diagnostics.  Eglot turns Flymake on in managed buffers itself, so there
+;; is no need to hook `eglot-managed-mode' and enable it again.
 (setq flymake-no-changes-timeout 0.5
       flymake-start-on-flymake-mode t)
 
-(add-hook 'eglot-managed-mode-hook
-          (lambda ()
-            (flymake-mode 1)))
+(with-eval-after-load 'flymake
+  (define-key flymake-mode-map (kbd "M-n") #'flymake-goto-next-error)
+  (define-key flymake-mode-map (kbd "M-p") #'flymake-goto-prev-error))
 
 ;; Display documentation in the echo area.
 (setq eldoc-echo-area-use-multiline-p nil)
