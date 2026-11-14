@@ -101,6 +101,7 @@ emacs -nw    # terminal
 Notes:
 
 - `elpa/`, `eln-cache/`, `tree-sitter/`, `transient/`, session files and `custom.el` are gitignored — the clone is source-only.
+- That first launch also builds `vterm`'s native module (`init.el` → `my/ensure-vterm-module`), so install the `cmake` + `libvterm` packages (§4.3) **before** it. Without them startup still succeeds and only warns once, and the module is built by a later startup as soon as the toolchain shows up.
 - `custom.el` is loaded if present and is machine-specific; keep your personal tweaks there, not in `lisp/`.
 - Startup garbage collection is relaxed in `early-init.el` and restored after startup (`gc-cons-threshold` 100 MB → 32 MB).
 
@@ -209,6 +210,8 @@ uv tool install rassumfrassum     # provides `rass`, the LSP multiplexer
 | `marksman` | Markdown LSP | `sudo apt install marksman` | `sudo pacman -S marksman` | `brew install marksman` |
 | `libvterm` + headers, `cmake` | compile `vterm`'s native module | `sudo apt install libvterm-dev cmake build-essential` | `sudo pacman -S libvterm cmake base-devel` | `brew install libvterm cmake` |
 
+`libvterm` + `cmake` are the only entries Emacs invokes itself: `init.el` builds `vterm-module.so` on the first startup that finds them, so `M-x vterm` never asks (see §3). Compiler output lands in the `*Install vterm*` buffer; a failing build warns once at startup and is retried on the next one.
+
 `editorconfig-mode` is pure Elisp — no `editorconfig-core-c` binary needed.
 
 ---
@@ -265,7 +268,7 @@ Inside Emacs:
 ```
 M-x eglot                    # in a .ts / .tsx / .py file: "EGLOT (... running)" in the modeline
 M-x consult-ripgrep          # project-wide search
-M-x vterm                    # native terminal (compiles the module on first use)
+M-x vterm                    # native terminal (module already built at first startup, §3)
 C-c t t                      # same, but through multi-vterm: named *vterm<1>*, cycle with C-c t n/p
 M-: (treesit-language-available-p 'tsx)   ;; => t once the grammar is built
 ```
@@ -292,7 +295,7 @@ to a single program deliberately; compare with `C-h v eglot-server-programs`.
 ```
 ~/.emacs.d/
 ├── early-init.el          # before package/UI init: GC tuning, no tool/menu bar
-├── init.el                # archives, package-init, theme, custom.el, module loader
+├── init.el                # archives, package-init, first-run bootstrap (vterm module), custom.el, module loader
 ├── custom.el              # machine-specific, gitignored
 ├── lisp/
 │   ├── init-core.el        # defaults, backups/auto-saves, savehist, PATH, zsh
@@ -517,7 +520,8 @@ same applies to `eat` if you installed it earlier — `multi-vterm` sits on top 
 | `tsx-ts-mode is not defined` / no TS highlighting | Grammar not built — §5. |
 | `Failed to start LSP server` with `rass` in the message | `uv tool install rassumfrassum`. If you don't want aggregation at all, remove the `my/rass-command` wrapper in `lisp/init-languages.el` and give Eglot the single server you want. |
 | No completion in a Python buffer | `M-x eglot-reconnect`; check `M-x eglot-events-buffer` and that `basedpyright-langserver`/`ruff` are on `PATH`. |
-| `vterm` prompts to compile and then fails | Install `cmake`, a C/C++ compiler, and `libvterm` headers (§4.3). |
+| `vterm` prompts to compile and then fails, or startup warns `Could not build vterm's native module` | Install `cmake`, a C/C++ compiler, and `libvterm` headers (§4.3) and restart — `init.el` rebuilds it. Read the `*Install vterm*` buffer for the compiler error. |
+| `M-x multi-vterm` fails with `Autoloading file …/multi-vterm.elc failed to define function multi-vterm` | A half-written `multi-vterm.elc` — a byte-compile interrupted while `vterm`'s module was missing — is shadowing the source, because a `.elc` is loaded in preference to its `.el`. `rm ~/.emacs.d/elpa/multi-vterm-*/multi-vterm.elc` then `M-x package-reinstall RET multi-vterm` (or recompile with `M-: (byte-compile-file (locate-library "multi-vterm.el"))`). The `my/ensure-vterm-module` bootstrap keeps a fresh install from hitting this. |
 | `consult-ripgrep` fails with `Searching for program: No such file or directory` | Install `ripgrep`. |
 | Markdown export does nothing | Install `pandoc`, or set `markdown-command` to something available. |
 | Fonts/icons look wrong in the terminal | This config uses no icon fonts on purpose; pick a Nerd Font only if you add icon packages. |
