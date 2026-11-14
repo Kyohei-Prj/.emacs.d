@@ -1,7 +1,7 @@
 # Emacs Configuration
 
 A modern, performance-oriented Emacs configuration for **frontend/web, Python, and general LSP-based development**.
-It is built around `eglot` + Tree-sitter, a Vertico/Orderless/Corfu completion stack, native `tab-bar` tabs, and `vterm` — with as little UI noise as possible.
+It is built around `eglot` + Tree-sitter, a Vertico/Orderless/Corfu completion stack, native `tab-bar` tabs, and `vterm`/`multi-vterm` — with as little UI noise as possible.
 
 Works on **Linux and macOS**, both in GUI and in the terminal.
 
@@ -39,7 +39,7 @@ Works on **Linux and macOS**, both in GUI and in the terminal.
 | Python | `basedpyright` + `ruff` (LSP + format-on-save) + `uv-mode` |
 | TypeScript / TSX | `tsc --lsp` + `tailwindcss-language-server` (multiplexed) |
 | Git | Magit |
-| Terminal | `vterm` |
+| Terminal | `vterm` + `multi-vterm` (several terminals, `C-c t` prefix) |
 | Windows / frames | Native `tab-bar-mode` with numeric tabs (`C-z` prefix) |
 | Theme | `modus-vivendi` (accessible, high contrast) |
 
@@ -266,6 +266,7 @@ Inside Emacs:
 M-x eglot                    # in a .ts / .tsx / .py file: "EGLOT (... running)" in the modeline
 M-x consult-ripgrep          # project-wide search
 M-x vterm                    # native terminal (compiles the module on first use)
+C-c t t                      # same, but through multi-vterm: named *vterm<1>*, cycle with C-c t n/p
 M-: (treesit-language-available-p 'tsx)   ;; => t once the grammar is built
 ```
 
@@ -302,7 +303,7 @@ to a single program deliberately; compare with `C-h v eglot-server-programs`.
 │   ├── init-lsp.el         # eglot auto-start, C-c l map (managed buffers), Flymake
 │   ├── init-languages.el   # per-language servers, uv/ruff, markdown, dockerfile
 │   ├── init-git.el         # Magit
-│   ├── init-terminal.el    # tab-bar (C-z) + vterm
+│   ├── init-terminal.el    # tab-bar (C-z) + vterm + multi-vterm (C-c t)
 │   └── init-editing.el     # multiple-cursors, vundo, envrc, editorconfig, ws-butler
 ├── elpa/                  # installed packages (gitignored)
 ├── eln-cache/             # native compilation cache (gitignored)
@@ -353,7 +354,13 @@ Branches: `master` is the stable branch, `develop` is where work happens.
   `windmove` on Shift+arrows. Buffer search stays on the built-in isearch.
 - **init-terminal.el** — `tab-bar-mode` with 0-indexed numeric tab labels and a `C-z`
   prefix; `vterm` with `C-c ESC` forwarding a literal Escape to the shell and `C-z`
-  listed in `vterm-keymap-exceptions` so the tab prefix is not sent to the shell.
+  listed in `vterm-keymap-exceptions` so the tab prefix is not sent to the shell;
+  `multi-vterm` for several terminals at once (`C-c t` prefix, buffers named
+  `*vterm<1>*`, `*vterm<2>*`, …, plus a project terminal and a dedicated bottom window),
+  and `my/vterm-new-tab` (`C-z t`) which opens a terminal in a new tab and names that
+  tab after the project or directory it starts in — `tab-bar` would otherwise label it
+  with the `*vterm<N>*` buffer name. `multi-vterm-buffer-name` controls those buffer
+  names, and `multi-vterm-dedicated-window-height-percent` (30) the bottom window's size.
 
 ---
 
@@ -419,12 +426,30 @@ Branches: `master` is the stable branch, `develop` is where work happens.
 | `C-z c` | new tab |
 | `C-z k` | close tab |
 | `C-z 0` … `C-z 9` | jump to tab 1 … 10 |
-| `M-x vterm` | new terminal (tab-bar keeps it in place) |
+| `C-z t` | new tab holding a single terminal (`my/vterm-new-tab`) |
+| `M-x vterm` | new terminal in this window (`multi-vterm` does not track it) |
 | `C-c ESC` | send a literal Escape to the shell (in `vterm-mode`) |
 
 `C-z` is listed in `vterm-keymap-exceptions`, so `C-z c` inside a `vterm` buffer creates a
 tab instead of sending SIGTSTP to the shell. Remove a key from that list to hand it back
 to the shell.
+
+### Terminals (prefix `C-c t`)
+
+| Key | Action |
+| --- | --- |
+| `C-c t t` | new terminal (`multi-vterm`), fills the current window |
+| `C-c t n` / `C-c t p` | next / previous terminal |
+| `C-c t P` | project terminal (`multi-vterm-project`), toggles a split at the project root |
+| `C-c t d` | dedicated terminal in a bottom window (30% of its rows), toggle |
+| `C-c t r` | rename the terminal under point |
+
+Buffers are named `*vterm<1>*`, `*vterm<2>*`, … (`multi-vterm-buffer-name`), the project
+one `*vterm - <project>*`. They are ordinary `vterm-mode` buffers, so everything above —
+the keymap exceptions, `C-c ESC`, the `C-z` tab prefix — applies to all of them. The
+`C-c t` prefix works inside a terminal too: `vterm-mode-map` only binds `C-c` as a prefix
+(`C-c C-c`, `C-c C-l`, `C-c C-y`), and a sequence that prefix cannot complete falls through
+to the global keymap.
 
 ### Editing
 
@@ -461,15 +486,15 @@ Installed automatically on first launch (`use-package-always-ensure` plus
 - **UI**: `modus-themes`, `which-key`, `rainbow-delimiters`
 - **Editing**: `multiple-cursors`, `vundo`, `ws-butler`, `mwim`, `envrc`, `editorconfig`
 - **Languages**: `markdown-mode`, `dockerfile-mode`, `uv-mode`, `ruff-format` (pulls `reformatter`, `pythonic`)
-- **Git / terminal**: `magit`, `vterm`
+- **Git / terminal**: `magit`, `vterm`, `multi-vterm`
 
 Transitive dependencies (`dash`, `s`, `f`, `cond-let`, `with-editor`, `magit-section`, `inheritenv`, `reformatter`, `pythonic`, `llama`) are pulled in automatically.
 
 `which-key` and `editorconfig` are used by the config but are **built into Emacs 31**, so they never appear in `elpa/`.
 
-`ivy`/`swiper` are gone (`vterm` alone provides the terminal; `eat`/`multi-vterm` were
-already dropped). They remain in `elpa/` on an existing checkout until
-`M-x package-autoremove` removes the orphans.
+`ivy`/`swiper` are gone (buffer search is plain isearch plus Consult); they remain in
+`elpa/` on an existing checkout until `M-x package-autoremove` removes the orphans. The
+same applies to `eat` if you installed it earlier — `multi-vterm` sits on top of `vterm`.
 
 ---
 
@@ -500,6 +525,7 @@ already dropped). They remain in `elpa/` on an existing checkout until
 | `uv` venv not activated in a Python buffer | `my/uv-mode-activate` needs `uv` on `PATH` **and** a `.venv` directory at or above the file. Otherwise force it with `M-x uv-mode-set` (`M-x uv-mode-unset` to undo). |
 | LSP connects to only one of several servers | A server binary was missing from `exec-path`, so `my/rass-command` degraded to a single server. Install it and `M-x eglot-reconnect`. |
 | `C-z c` in a `vterm` buffer suspends the shell instead of opening a tab | `C-z` must stay in `vterm-keymap-exceptions` (see §9) |
+| `C-c t …` types into the shell instead of running the terminal commands | `C-c` must stay in `vterm-keymap-exceptions`; `multi-vterm` itself binds nothing, so a missing command means the package is not installed (§10) |
 | No dabbrev/file completion at point, only LSP | Cape sources must be on the **global** `completion-at-point-functions` — `add-hook`, not `add-to-list`, which writes the startup buffer's local value |
 
 ---
